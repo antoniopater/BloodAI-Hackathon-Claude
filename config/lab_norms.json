@@ -1,0 +1,164 @@
+{
+  "HGB": {
+    "kids": {
+      "m": {"low": 11.5, "high": 15.5, "unit": "g/dL"},
+      "f": {"low": 11.0, "high": 14.5, "unit": "g/dL"}
+    },
+    "under_30": {
+      "m": {"low": 13.5, "high": 17.5, "unit": "g/dL"},
+      "f": {"low": 12.0, "high": 16.0, "unit": "g/dL"}
+    },
+    "under_60": {
+      "m": {"low": 13.5, "high": 17.5, "unit": "g/dL"},
+      "f": {"low": 12.0, "high": 16.0, "unit": "g/dL"}
+    },
+    "seniors": {
+      "m": {"low": 12.5, "high": 17.5, "unit": "g/dL"},
+      "f": {"low": 11.5, "high": 15.5, "unit": "g/dL"}
+    }
+  },
+  "HCT": {
+    "kids": {
+      "m": {"low": 35, "high": 45, "unit": "%"},
+      "f": {"low": 33, "high": 43, "unit": "%"}
+    },
+    "under_30": {
+      "m": {"low": 41, "high": 50, "unit": "%"},
+      "f": {"low": 36, "high": 46, "unit": "%"}
+    },
+    "under_60": {
+      "m": {"low": 41, "high": 50, "unit": "%"},
+      "f": {"low": 36, "high": 46, "unit": "%"}
+    },
+    "seniors": {
+      "m": {"low": 38, "high": 50, "unit": "%"},
+      "f": {"low": 35, "high": 45, "unit": "%"}
+    }
+  },
+  "PLT": {
+    "kids": {
+      "m": {"low": 150, "high": 400, "unit": "K/uL"},
+      "f": {"low": 150, "high": 400, "unit": "K/uL"}
+    },
+    "under_30": {
+      "m": {"low": 150, "high": 400, "unit": "K/uL"},
+      "f": {"low": 150, "high": 400, "unit": "K/uL"}
+    },
+    "under_60": {
+      "m": {"low": 150, "high": 400, "unit": "K/uL"},
+      "f": {"low": 150, "high": 400, "unit": "K/uL"}
+    },
+    "seniors": {
+      "m": {"low": 150, "high": 400, "unit": "K/uL"},
+      "f": {"low": 150, "high": 400, "unit": "K/uL"}
+    }
+  },
+  "MCV": {
+    "kids": {
+      "m": {"low": 77, "high": 95, "unit": "fL"},
+      "f": {"low": 77, "high": 95, "unit": "fL"}
+    },
+    "under_30": {
+      "m": {"low": 80, "high": 100, "unit": "fL"},
+      "f": {"low": 80, "high": 100, "unit": "fL"}
+    },
+    "under_60": {
+      "m": {"low": 80, "high": 100, "unit": "fL"},
+      "f": {"low": 80, "high": 100, "unit": "fL"}
+    },
+    "seniors": {
+      "m": {"low": 80, "high": 100, "unit": "fL"},
+      "f": {"low": 80, "high": 100, "unit": "fL"}
+    }
+  },
+  "WBC": {
+    "kids": {
+      "m": {"low": 5.0, "high": 15.0, "unit": "K/uL"},
+      "f": {"low": 5.0, "high": 15.0, "unit": "K/uL"}
+    },
+    "under_30": {
+      "m": {"low": 4.5, "high": 11.0, "unit": "K/uL"},
+      "f": {"low": 4.5, "high": 11.0, "unit": "K/uL"}
+    },
+    "under_60": {
+      "m": {"low": 4.5, "high": 11.0, "unit": "K/uL"},
+      "f": {"low": 4.5, "high": 11.0, "unit": "K/uL"}
+    },
+    "seniors": {
+      "m": {"low": 4.5, "high": 11.0, "unit": "K/uL"},
+      "f": {"low": 4.5, "high": 11.0, "unit": "K/uL"}
+    }
+  },
+  "CREATININE": {
+    "kids": {
+      "m": {"low": 0.3, "high": 0.7, "unit": "mg/dL"},
+      "f": {"low": 0.3, "high": 0.7, "unit": "mg/dL"}
+    },
+    "under_30": {
+      "m": {"low": 0.74, "high": 1.35, "unit": "mg/dL"},
+      "f": {"low": 0.6, "high": 1.1, "unit": "mg/dL"}
+    },
+    "under_60": {
+      "m": {"low": 0.74, "high": 1.35, "unit": "mg/dL"},
+      "f": {"low": 0.6, "high": 1.1, "unit": "mg/dL"}
+    },
+    "seniors": {
+      "m": {"low": 0.74, "high": 1.35, "unit": "mg/dL"},
+      "f": {"low": 0.6, "high": 1.1, "unit": "mg/dL"}
+    }
+  },
+  "ALT": {
+    "kids": {
+      "m": {"low": 7, "high": 56, "unit": "U/L"},
+      "f": {"low": 7, "high": 45, "unit": "U/L"}
+    },
+    "under_30": {
+      "m": {"low": 7, "high": 56, "unit": "U/L"},
+      "f": {"low": 7, "high": 45, "unit": "U/L"}
+    },
+    "under_60": {
+      "m": {"low": 7, "high": 56, "unit": "U/L"},
+      "f": {"low": 7, "high": 45, "unit": "U/L"}
+    },
+    "seniors": {
+      "m": {"low": 10, "high": 60, "unit": "U/L"},
+      "f": {"low": 10, "high": 45, "unit": "U/L"}
+    }
+  },
+  "AST": {
+    "kids": {
+      "m": {"low": 10, "high": 40, "unit": "U/L"},
+      "f": {"low": 10, "high": 40, "unit": "U/L"}
+    },
+    "under_30": {
+      "m": {"low": 10, "high": 40, "unit": "U/L"},
+      "f": {"low": 10, "high": 40, "unit": "U/L"}
+    },
+    "under_60": {
+      "m": {"low": 10, "high": 40, "unit": "U/L"},
+      "f": {"low": 10, "high": 40, "unit": "U/L"}
+    },
+    "seniors": {
+      "m": {"low": 10, "high": 40, "unit": "U/L"},
+      "f": {"low": 10, "high": 40, "unit": "U/L"}
+    }
+  },
+  "UREA": {
+    "kids": {
+      "m": {"low": 7, "high": 20, "unit": "mg/dL"},
+      "f": {"low": 7, "high": 20, "unit": "mg/dL"}
+    },
+    "under_30": {
+      "m": {"low": 7, "high": 20, "unit": "mg/dL"},
+      "f": {"low": 7, "high": 20, "unit": "mg/dL"}
+    },
+    "under_60": {
+      "m": {"low": 7, "high": 20, "unit": "mg/dL"},
+      "f": {"low": 7, "high": 20, "unit": "mg/dL"}
+    },
+    "seniors": {
+      "m": {"low": 8, "high": 23, "unit": "mg/dL"},
+      "f": {"low": 8, "high": 23, "unit": "mg/dL"}
+    }
+  }
+}

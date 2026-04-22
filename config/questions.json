@@ -1,0 +1,86 @@
+[
+  {
+    "id": "hgb_low_01",
+    "trigger": "HGB_LOW",
+    "question": "Do you experience fatigue or shortness of breath?",
+    "snomed": "80353009",
+    "expected_answers": ["yes", "no"]
+  },
+  {
+    "id": "hgb_low_02",
+    "trigger": "HGB_LOW",
+    "question": "Have you had any recent bleeding (nose, gums, etc)?",
+    "snomed": "131148009",
+    "expected_answers": ["yes", "no"]
+  },
+  {
+    "id": "hgb_critical",
+    "trigger": "HGB_CRITICAL_LOW",
+    "question": "Seek medical attention immediately. Critical anemia detected.",
+    "snomed": "439663008",
+    "expected_answers": ["understood"]
+  },
+  {
+    "id": "plt_low_01",
+    "trigger": "PLT_LOW",
+    "question": "Do you have any unusual bruising or bleeding?",
+    "snomed": "302227002",
+    "expected_answers": ["yes", "no"]
+  },
+  {
+    "id": "plt_critical",
+    "trigger": "PLT_CRITICAL_LOW",
+    "question": "Severe thrombocytopenia. Seek immediate medical care.",
+    "snomed": "302233003",
+    "expected_answers": ["understood"]
+  },
+  {
+    "id": "wbc_high_01",
+    "trigger": "WBC_HIGH",
+    "question": "Do you have fever, chills, or signs of infection?",
+    "snomed": "386661006",
+    "expected_answers": ["yes", "no"]
+  },
+  {
+    "id": "wbc_critical",
+    "trigger": "WBC_CRITICAL_HIGH",
+    "question": "Critical elevation in white blood cells. Urgent evaluation needed.",
+    "snomed": "300208002",
+    "expected_answers": ["understood"]
+  },
+  {
+    "id": "creatinine_high_01",
+    "trigger": "CREATININE_HIGH",
+    "question": "Do you have a history of kidney disease?",
+    "snomed": "90708001",
+    "expected_answers": ["yes", "no"]
+  },
+  {
+    "id": "creatinine_high_02",
+    "trigger": "CREATININE_HIGH",
+    "question": "Have you noticed changes in urination or swelling?",
+    "snomed": "47834005",
+    "expected_answers": ["yes", "no"]
+  },
+  {
+    "id": "creatinine_critical",
+    "trigger": "CREATININE_CRITICAL_HIGH",
+    "question": "Severe kidney dysfunction. Immediate nephrology consultation required.",
+    "snomed": "431857002",
+    "expected_answers": ["understood"]
+  },
+  {
+    "id": "alt_high_01",
+    "trigger": "ALT_HIGH",
+    "question": "Do you have abdominal pain, jaundice, or dark urine?",
+    "snomed": "18165001",
+    "expected_answers": ["yes", "no"]
+  },
+  {
+    "id": "urea_high_01",
+    "trigger": "UREA_HIGH",
+    "question": "Do you have decreased urine output or swelling?",
+    "snomed": "16403004",
+    "expected_answers": ["yes", "no"]
+  }
+]
