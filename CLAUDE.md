@@ -70,7 +70,7 @@ Each day has a skill with checklist, self-assessment, and fallback plan:
 
 ## Key APIs
 - NFZ Treatment Dates: `https://api.nfz.gov.pl/app-itl-api/queues?case=1&province=07&benefit=PORADNIA+NEFROLOGICZNA`
-- Anthropic: `https://api.anthropic.com/v1/messages` (model: claude-sonnet-4-20250514)
+- Anthropic: `https://api.anthropic.com/v1/messages` (model: claude-opus-4-7)
 - NFZ API is public, no key, free
 
 ## Tech stack
