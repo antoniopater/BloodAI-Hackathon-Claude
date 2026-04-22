@@ -40,15 +40,17 @@ RANDOM_SEED = 42
 random.seed(RANDOM_SEED)
 
 LAB_CODES_SYNTHEA = {
-    "4544": "HGB",
-    "4545": "HCT",
-    "4549": "PLT",
-    "3025": "MCV",
-    "4353": "WBC",
-    "3020": "CREATININE",
-    "3016": "ALT",
-    "3015": "AST",
-    "3024": "UREA",
+    "718-7": "HGB",
+    "4544-3": "HCT",
+    "777-3": "PLT",
+    "787-2": "MCV",
+    "6690-2": "WBC",
+    "38483-4": "CREATININE",
+    "2160-0": "CREATININE",
+    "1742-6": "ALT",
+    "1920-8": "AST",
+    "6299-2": "UREA",
+    "3094-0": "UREA",
 }
 
 LAB_CODES_MIMIC = {
@@ -65,6 +67,50 @@ LAB_CODES_MIMIC = {
 
 CLASSES = ["POZ", "GASTRO", "HEMATO", "NEFRO", "SOR", "CARDIO", "PULMO", "HEPATO"]
 CLASS_LIMITS = {cls: 40000 for cls in CLASSES}
+
+# Keyword mapping for Synthea SNOMED condition descriptions
+SNOMED_KEYWORDS = {
+    "HEMATO": [
+        "anemia", "anaemia", "leukemia", "leukaemia", "lymphoma", "thrombocytopenia",
+        "polycythemia", "myeloma", "hemolytic", "haemolytic", "aplastic",
+    ],
+    "NEFRO": [
+        "kidney", "renal", "nephro", "glomerulo", "creatinine", "dialysis",
+        "chronic kidney", "acute kidney", "proteinuria", "nephrotic",
+    ],
+    "CARDIO": [
+        "ischemic heart", "ischaemic heart", "coronary", "cardiac", "heart failure",
+        "atrial fibrillation", "myocardial", "angina", "hypertension", "hypertensive",
+        "heart disease", "arrhythmia", "cardiomyopathy",
+    ],
+    "PULMO": [
+        "asthma", "bronchitis", "bronch", "pulmonary", "pneumonia", "emphysema",
+        "copd", "respiratory", "sinusitis", "pharyngitis", "laryngitis",
+    ],
+    "GASTRO": [
+        "gastro", "colitis", "crohn", "irritable bowel", "peptic", "ulcer",
+        "hepatitis", "cirrhosis", "liver", "gallstone", "cholecystitis",
+        "pancreatitis", "diverticulitis", "hernia", "reflux",
+    ],
+    "HEPATO": [
+        "hepatic", "hepatitis", "cirrhosis", "liver fibrosis", "liver disease",
+        "jaundice", "fatty liver",
+    ],
+    "SOR": [
+        "laceration", "fracture", "trauma", "injury", "poisoning", "overdose",
+        "sepsis", "shock", "acute myocardial infarction", "stroke",
+        "pulmonary embolism", "diabetic ketoacidosis", "acute respiratory",
+    ],
+}
+
+
+def classify_snomed_description(description: str) -> Optional[str]:
+    """Map SNOMED condition description to specialty using keywords."""
+    desc_lower = description.lower()
+    for specialty, keywords in SNOMED_KEYWORDS.items():
+        if any(kw in desc_lower for kw in keywords):
+            return specialty
+    return None
 
 
 def preprocess_synthea(
@@ -126,9 +172,10 @@ def preprocess_synthea(
         for _, row in conditions_df.iterrows():
             pid = row["PATIENT"]
             code = str(row["CODE"])
+            description = str(row.get("DESCRIPTION", ""))
             if pid not in patient_conditions:
                 patient_conditions[pid] = []
-            patient_conditions[pid].append(code)
+            patient_conditions[pid].append((code, description))
 
         for _, row in observations_df.iterrows():
             pid = row["PATIENT"]
@@ -171,11 +218,19 @@ def preprocess_synthea(
                 tokens.append(f"TRIGGER_{trigger}")
 
             target_classes = set()
-            for icd_code in patient_conditions[pid]:
+            for code, description in patient_conditions[pid]:
+                # Try ICD prefix matching first (for MIMIC-style codes)
+                matched = False
                 for class_name, icd_prefixes in icd_mapping.items():
-                    if any(icd_code.startswith(prefix) for prefix in icd_prefixes):
+                    if any(code.startswith(prefix) for prefix in icd_prefixes):
                         target_classes.add(class_name)
+                        matched = True
                         break
+                # Fall back to SNOMED keyword matching (Synthea)
+                if not matched and description:
+                    specialty = classify_snomed_description(description)
+                    if specialty:
+                        target_classes.add(specialty)
 
             if not target_classes:
                 target_classes.add("POZ")
@@ -371,10 +426,10 @@ def balance_classes(
     for cls, count in class_counts.items():
         if count < target_min_count:
             to_add = target_min_count - count
-            candidates = [seq for seq, targets in sequences if cls in targets]
+            candidates = [(seq, targets) for seq, targets in sequences if cls in targets]
             if candidates:
                 additions = random.choices(candidates, k=to_add)
-                balanced.extend([(seq, set(targets)) for seq, targets in additions])
+                balanced.extend(additions)
 
     return balanced
 
@@ -493,9 +548,9 @@ def main():
     else:
         mimic_train, mimic_val, mimic_test = [], [], []
 
-    # Combine
-    train_sequences = [seq for seq, _ in synthea_train] + mimic_train
-    val_sequences = [seq for seq, _ in synthea_val] + mimic_val
+    # Combine (synthea_train/val are plain strings; mimic lists may be strings too)
+    train_sequences = synthea_train + mimic_train
+    val_sequences = synthea_val + mimic_val
     test_sequences = mimic_test
 
     # Apply balancing if requested
