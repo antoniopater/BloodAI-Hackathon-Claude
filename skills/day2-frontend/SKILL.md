@@ -1,95 +1,95 @@
 ---
 name: bloodai-day2-frontend
-description: "Dzień 2 hackathonu BloodAI: React frontend — formularz, wizualizacja triażu, tłumacz parametrów prostym językiem, attention heatmap. Kontrola postępu i ocena na koniec dnia."
+description: "BloodAI hackathon Day 2: React frontend — form, triage visualization, plain-language parameter explainer, attention heatmap. Progress tracking and end-of-day assessment."
 ---
 
-# Dzień 2: Frontend Core + Tłumacz Parametrów
+# Day 2: Frontend Core + Parameter Explainer
 
-## Cel dnia
-Na koniec dnia masz: działający React UI z formularzem wpisywania wyników, tłumaczem parametrów prostym językiem, wizualizacją 8 klas triażu z attention heatmap, i adaptive interview. Połączony z backendem z dnia 1.
+## Goal for the day
+By end of day: working React UI with lab input form, plain-language parameter explanations, 8-class triage visualization with attention heatmap, and adaptive interview. Connected to the Day 1 backend.
 
-## Rano: sprawdź status z dnia 1
-- [ ] Trening się zakończył? Sprawdź metryki (ROC AUC, ECE)
-- [ ] `/predict` endpoint działa? Przetestuj kilka scenariuszy
-- [ ] Jeśli model nie dał dobrych wyników — potunuj thresholds, nie panikuj
+## Morning: check Day 1 status
+- [ ] Training finished? Check metrics (ROC AUC, ECE)
+- [ ] `/predict` endpoint works? Test a few scenarios
+- [ ] If the model underperforms — tune thresholds, don't panic
 
-## Checklist zadań
+## Task checklist
 
-### Blok 1: React Setup + Input Form (2-3h)
-- [ ] React app (Vite lub Next.js)
-- [ ] Layout: dark theme, medyczny/kliniczny design
-- [ ] Formularz wpisywania wyników:
-  - Pola: wiek, płeć, HGB, HCT, PLT, MCV, WBC, Kreatynina, ALT
-  - Walidacja: min/max per parametr
-  - Kolorowe obramowania wg statusu: ✅ norma (zielony), ⚠️ poza normą (żółty), 🚨 krytyczne (czerwony)
-  - Presety demo: "Nefrologia", "Multi-label", "Norma" — one-click fill
-- [ ] Przycisk "Analizuj" → POST do `/predict`
+### Block 1: React Setup + Input Form (2–3h)
+- [ ] React app (Vite or Next.js)
+- [ ] Layout: dark theme, medical/clinical design
+- [ ] Lab results form:
+  - Fields: age, sex, HGB, HCT, PLT, MCV, WBC, Creatinine, ALT
+  - Validation: min/max per parameter
+  - Colored borders by status: ✅ in range (green), ⚠️ out of range (yellow), 🚨 critical (red)
+  - Demo presets: "Nephrology", "Multi-label", "Normal" — one-click fill
+- [ ] "Analyze" button → POST to `/predict`
 
-### Blok 2: Tłumacz Parametrów — KLUCZOWY FEATURE (2-3h)
-- [ ] Przy każdym polu parametru: rozwijany panel "Co to oznacza?"
-- [ ] Dwa poziomy informacji:
-  1. **Statyczny** (zawsze widoczny): nazwa parametru + "za co odpowiada" (1 zdanie)
-  2. **Dynamiczny** (po kliknięciu "Wyjaśnij"): Opus 4.7 generuje kontekstowy opis
+### Block 2: Parameter Explainer — KEY FEATURE (2–3h)
+- [ ] Each parameter field: expandable panel "What does this mean?"
+- [ ] Two information levels:
+  1. **Static** (always visible): parameter name + one-line "what it does"
+  2. **Dynamic** (on "Explain" click): Opus 4.7 generates contextual text
 
-Przykłady statycznych opisów (hardkodowane, szybkie):
+Example static blurbs (hardcoded, fast):
 ```
-HGB: "Hemoglobina — białko przenoszące tlen w krwi. Niska = możliwa anemia."
-HCT: "Hematokryt — jaki procent krwi stanowią czerwone krwinki."
-PLT: "Płytki krwi — odpowiadają za krzepnięcie. Za mało = ryzyko krwawień."
-MCV: "Średnia objętość krwinki — pomaga rozróżnić typy anemii."
-WBC: "Białe krwinki — armia odpornościowa. Za dużo = możliwa infekcja lub zapalenie."
-Kreatynina: "Odpad z pracy mięśni usuwany przez nerki. Wysoka = nerki mogą mieć problem."
-ALT: "Enzym wątrobowy. Wysoki = możliwe uszkodzenie wątroby."
+HGB: "Hemoglobin — protein that carries oxygen in blood. Low = possible anemia."
+HCT: "Hematocrit — what fraction of blood is red blood cells."
+PLT: "Platelets — help blood clot. Too few = bleeding risk."
+MCV: "Mean red cell volume — helps classify types of anemia."
+WBC: "White blood cells — immune defense. High = possible infection or inflammation."
+Creatinine: "Muscle waste cleared by kidneys. High = kidneys may be struggling."
+ALT: "Liver enzyme. High = possible liver injury."
 ```
 
-- [ ] Dynamiczne wyjaśnienia (Opus 4.7 API call):
-  - Prompt: "Pacjent {wiek} lat, {płeć}. Parametr {nazwa} = {wartość} {jednostka} (norma: {low}-{high}). Wyjaśnij prostym językiem co to oznacza dla tego pacjenta, max 2 zdania. Nie diagnozuj, nie strasz."
-  - Wywoływany on-demand (przycisk), nie automatycznie
-  - Cache: raz wygenerowany opis trzymaj w state do końca sesji
-  - Loading state: skeleton/typing animation podczas generowania
+- [ ] Dynamic explanations (Opus 4.7 API):
+  - Prompt: "Patient {age} years, {sex}. Parameter {name} = {value} {unit} (reference: {low}-{high}). Explain in plain language what this means for this patient, max 2 sentences. Do not diagnose or alarm."
+  - On-demand (button), not on every keystroke
+  - Cache: keep generated text in state for the session
+  - Loading: skeleton / typing animation while generating
 
-- [ ] Wyjaśnienie kombinacji (po kliknięciu "Analizuj"):
-  - Opus 4.7 dostaje WSZYSTKIE parametry → generuje krótkie podsumowanie wzajemnych zależności
-  - Np. "Niska hemoglobina w połączeniu z wysoką kreatyniną może wskazywać na anemię towarzyszącą chorobie nerek"
+- [ ] Combination summary (after "Analyze"):
+  - Opus 4.7 receives ALL parameters → short summary of interactions
+  - e.g. "Low hemoglobin with high creatinine may suggest anemia of chronic kidney disease"
 
-### Blok 3: Wizualizacja Triażu (2h)
-- [ ] 8 horizontal bars z prawdopodobieństwami (animowane, kolorowe)
-- [ ] Threshold marker na każdym barze
-- [ ] Klasy powyżej threshold oznaczone jako "zalecane"
+### Block 3: Triage Visualization (2h)
+- [ ] 8 horizontal probability bars (animated, colored)
+- [ ] Threshold marker on each bar
+- [ ] Classes above threshold marked as "recommended"
 - [ ] Attention heatmap:
-  - Pionowy bar chart lub heatmap
-  - Parametry posortowane od najwyższej attention do najniższej
-  - Kolorowanie: czerwony (wysoka attention) → niebieski (niska)
-  - Tooltip z wartością attention score
+  - Vertical bar chart or heatmap
+  - Parameters sorted by attention high → low
+  - Color: red (high attention) → blue (low)
+  - Tooltip with attention score
 
-### Blok 4: Adaptive Interview (1h)
-- [ ] Jeśli parametr poza normą → wyskakuje pytanie z banku (GET `/questions/{param}`)
-- [ ] UI: modal lub inline card z pytaniem + tak/nie
-- [ ] Odpowiedź dodawana do tokenu → re-predict
-- [ ] Max 3 pytania (żeby nie zanudzić)
+### Block 4: Adaptive Interview (1h)
+- [ ] If parameter out of range → question from bank (GET `/questions/{param}`)
+- [ ] UI: modal or inline card with question + yes/no
+- [ ] Answer appended as token → re-predict
+- [ ] Max 3 questions (avoid fatigue)
 
-### Blok 5: Animacje + Polish (1h)
-- [ ] Płynne przejścia: input → loading (spinner + "Analiza BERT...") → results
-- [ ] Fade-in na wynikach
-- [ ] Typing animation na wyjaśnieniach Opus
-- [ ] Mobile responsive (podstawowy)
+### Block 5: Animations + Polish (1h)
+- [ ] Smooth transitions: input → loading (spinner + "Running BERT...") → results
+- [ ] Fade-in on results
+- [ ] Typing animation on Opus explanations
+- [ ] Basic mobile responsive layout
 
-## Self-assessment na koniec dnia
+## End-of-day self-assessment
 
-| Pytanie | Score |
-|---------|-------|
-| Czy formularz wygląda profesjonalnie i działa? | /5 |
-| Czy tłumacz parametrów jest zrozumiały dla nie-medyka? | /5 |
-| Czy wizualizacja triażu (bars + attention) jest czytelna? | /5 |
-| Czy Opus 4.7 jest zintegrowany z wyjaśnieniami? | /5 |
-| Czy whole flow działa end-to-end (input → predict → results)? | /5 |
+| Question | Score |
+|----------|-------|
+| Does the form look professional and work correctly? | /5 |
+| Is the parameter explainer understandable for non-medical users? | /5 |
+| Is triage visualization (bars + attention) clear? | /5 |
+| Is Opus 4.7 integrated with explanations? | /5 |
+| Does the full flow work end-to-end (input → predict → results)? | /5 |
 
-**25/25** = frontend gotowy, jutro skupiasz się na Opus features
-**20-24** = dobrze, drobny polish jutro rano
-**15-19** = uprość — skup się na core flow, attention i Opus mogą poczekać
-**<15** = alarm — poświęć jutro rano na dokończenie frontendu
+**25/25** = frontend ready; tomorrow focus on Opus features  
+**20–24** = good; light polish tomorrow morning  
+**15–19** = simplify — core flow first; attention and Opus can wait  
+**<15** = alarm — finish frontend tomorrow morning
 
 ## Fallback
-- Tłumacz parametrów: jeśli Opus API nie działa → hardkodowane opisy (statyczne) wystarczą
-- Attention heatmap: może być prosty bar chart zamiast fancy heatmap
-- Adaptive interview: może być opcjonalny, nie blokuj triażu
+- Parameter explainer: if Opus API fails → static blurbs are enough
+- Attention heatmap: simple bar chart instead of fancy heatmap
+- Adaptive interview: optional; don't block triage

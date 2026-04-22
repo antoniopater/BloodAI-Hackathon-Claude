@@ -1,132 +1,130 @@
 ---
 name: bloodai-day5-demo
-description: "Dzień 5 hackathonu BloodAI: przygotowanie demo, deploy, pitch. Wszystko musi działać na żywo bez zacięć. Backup video. Finalna samoocena."
+description: "BloodAI hackathon Day 5: demo preparation, deploy, pitch. Everything must work live without stalling. Backup video. Final self-assessment."
 ---
 
-# Dzień 5: Demo Prep + Deploy
+# Day 5: Demo Prep + Deploy
 
-## Cel dnia
-Na koniec dnia masz: zdeployowaną aplikację, przećwiczony 2-minutowy pitch, 4 scenariusze demo przetestowane, backup video nagrane.
+## Goal for the day
+By end of day: deployed app, rehearsed 2-minute pitch, 4 demo scenarios tested, backup video recorded.
 
-## Rano: Full E2E Test (2h)
-- [ ] Przejdź cały flow od zera, nagrywając ekran:
-  1. Otwórz apkę → skan kartki z wynikami
-  2. Podgląd OCR → zatwierdź
-  3. Tłumacz parametrów (kliknij "co to znaczy" na 2-3 parametrach)
-  4. Analizuj → wyniki triażu + attention
-  5. Przełącz tryb (pacjent ↔ klinicysta)
-  6. Opus wyjaśnienie
-  7. NFZ kolejki → pokaż placówki
-  8. (opcjonalnie) Trendy — porównaj z wcześniejszymi
-- [ ] Zanotuj co się zacina, co jest wolne, co wygląda źle
-- [ ] Napraw krytyczne bugi (max 1h na fixy)
+## Morning: Full E2E Test (2h)
+- [ ] Walk the full flow from scratch while screen recording:
+  1. Open app → scan lab result sheet
+  2. OCR preview → confirm
+  3. Parameter explainer (click "what this means" on 2–3 parameters)
+  4. Analyze → triage results + attention
+  5. Toggle mode (patient ↔ clinician)
+  6. Opus explanation
+  7. NFZ queues → show facilities
+  8. (optional) Trends — compare with older results
+- [ ] Note what stalls, what is slow, what looks bad
+- [ ] Fix critical bugs (max 1h for fixes)
 
-## Deploy (1-2h)
+## Deploy (1–2h)
 - [ ] Backend:
   - Railway / Render / Fly.io
-  - Upewnij się: model ładuje się przy starcie (cold start < 30s)
-  - Health check endpoint: `GET /health`
-  - CORS ustawione na frontend domain
+  - Ensure: model loads at startup (cold start < 30s)
+  - Health check: `GET /health`
+  - CORS set to frontend domain
 - [ ] Frontend:
-  - Vercel (najprościej z React/Next.js)
+  - Vercel (simplest for React/Next.js)
   - Environment variables: API URL, Anthropic API key
-- [ ] Test na deploy: otwórz na telefonie + laptopie → cały flow działa
+- [ ] Deploy test: phone + laptop → full flow works
 
-## Demo Script — 4 scenariusze (przygotuj i przećwicz)
+## Demo Script — 4 scenarios (prepare and rehearse)
 
-### Scenariusz 1: 📷 "Skan kartki" (WOW moment — zaczynaj od tego!)
+### Scenario 1: 📷 "Sheet scan" (WOW moment — lead with this!)
 ```
-"Wyobraźcie sobie: pacjent wychodzi z laboratorium z kartką wyników.
-Nie wie co oznaczają te liczby. Nie wie do kogo iść.
-[robi zdjęcie kartki telefonem]
-System rozpoznaje wyniki, porównuje z normami Z TEJ kartki...
-[pokazuje auto-fill + weryfikację]
-...i tłumaczy każdy parametr prostym językiem.
-[klika 'Co to oznacza?' na kreatyninie]
-"
-```
-
-### Scenariusz 2: 🔬 "Prosty case — nefrologia"
-```
-"Mężczyzna, 60 lat, wysoka kreatynina 4.8.
-[wpisuje ręcznie lub używa preset]
-Model BERT, trenowany na 260 tysiącach danych klinicznych,
-natychmiast identyfikuje: Nefrologia z 99% prawdopodobieństwem.
-[pokazuje attention map]
-Patrzcie — model skupia attention na tokenie CREATININE_Q9.
-To jest interpretowalne AI — lekarz widzi DLACZEGO.
-[przełącza na tryb pacjenta]
-A pacjent widzi: 'Zalecamy konsultację nefrologiczną.'
-"
+"Imagine: a patient leaves the lab with a paper printout.
+They don't know what the numbers mean. They don't know who to see.
+[takes phone photo of the sheet]
+The system reads the results and compares to reference ranges FROM THAT sheet...
+[shows auto-fill + verification]
+...and explains each parameter in plain language.
+[clicks 'What does this mean?' on creatinine]"
 ```
 
-### Scenariusz 3: 🏥 "NFZ kolejki" (killer feature)
+### Scenario 2: 🔬 "Simple case — nephrology"
 ```
-"Ale gdzie iść? System łączy się z publicznym API NFZ...
-[klika 'Znajdź specjalistę']
-Poradnia nefrologiczna w Warszawie — NFZ: pierwszy termin za 47 dni.
-Prywatnie: za 3 dni.
-[pokazuje mapę z placówkami]
-Pacjent może od razu zadzwonić lub nawigować.
-W Polsce czeka się średnio 4 miesiące na specjalistę.
-My skracamy ten czas do 60 sekund decyzji."
-```
-
-### Scenariusz 4: 🚨 "Multi-label — kobieta 70 lat" (pokaz mocy)
-```
-"Kobieta 70 lat, ciężka anemia, niewydolność nerek,
-infekcja, objawy kardiologiczne.
-[preset 'Multi-label']
-Model przewiduje 5 specjalizacji jednocześnie —
-to jest multi-label, nie single-label.
-Opus 4.7 weryfikuje: 'Zgadzam się z routingiem BERT.'
-A teraz patrzcie na attention — rozproszona
-po wielu tokenach, bo to złożony przypadek."
+"Male, 60, high creatinine 4.8.
+[manual entry or preset]
+BERT trained on 260k clinical encounters
+immediately flags Nephrology at 99% probability.
+[shows attention map]
+Look — the model attends heavily to CREATININE_Q9.
+That's interpretable AI — the clinician sees WHY.
+[switches to patient mode]
+The patient sees: 'We recommend a nephrology consult.'"
 ```
 
-## Pitch — 2 minuty (wyucz się!)
+### Scenario 3: 🏥 "NFZ queues" (killer feature)
+```
+"But where to go? The app calls the public NFZ API...
+[clicks 'Find specialist']
+Nephrology clinic in Warsaw — NFZ: first slot in 47 days.
+Private: about 3 days.
+[shows map with pins]
+The patient can call or navigate immediately.
+In Poland, average wait for a specialist is ~4 months.
+We compress the decision to about 60 seconds."
+```
+
+### Scenario 4: 🚨 "Multi-label — woman 70" (show depth)
+```
+"Woman 70, severe anemia, kidney dysfunction,
+infection, cardiac symptoms.
+['Multi-label' preset]
+The model predicts 5 specialties at once —
+true multi-label, not single-label.
+Opus 4.7 verifies: 'I agree with BERT routing.'
+Now watch attention — spread across many tokens
+because this is a complex case."
+```
+
+## Pitch — 2 minutes (memorize)
 
 ```
 [10s] PROBLEM:
-"W Polsce pacjent czeka średnio 4 miesiące na specjalistę.
-190 dni na endokrynologa. A zaczyna się od kartki z wynikami,
-której nie rozumie."
+"In Poland patients wait on average 4 months for a specialist.
+190 days for an endocrinologist. It starts with a lab printout
+they cannot understand."
 
 [20s] SOLUTION:
-"BloodAI: zeskanuj wyniki badań krwi — AI tłumaczy co oznaczają,
-mówi do jakiego specjalisty iść, i pokazuje kolejki NFZ z terminami."
+"BloodAI: scan blood test results — AI explains what they mean,
+tells you which specialist to see, and shows NFZ queues with wait times."
 
 [60s] DEMO:
-[Scenariusz 1: skan → auto-fill → tłumacz → triage → NFZ]
+[Scenario 1: scan → auto-fill → explain → triage → NFZ]
 
 [20s] TECH:
-"Pod spodem: dedykowany model BERT trenowany na danych klinicznych
-z cost-sensitive loss i attention interpretability.
-NIE wrapper na LLM — Opus 4.7 jest warstwą inteligencji NAD modelem:
-Vision do OCR, tłumaczenie, weryfikacja, analiza trendów."
+"Under the hood: a dedicated BERT trained on clinical data
+with cost-sensitive loss and attention interpretability.
+NOT an LLM wrapper — Opus 4.7 is an intelligence layer ON TOP:
+Vision for OCR, explanations, verification, trend analysis."
 
 [10s] DIFFERENTIATOR:
-"Żadna istniejąca apka nie łączy walidowanego modelu medycznego,
-tłumaczenia prostym językiem, i realnych danych NFZ o kolejkach."
+"No existing app combines a validated medical model,
+plain-language explanations, and live NFZ queue data."
 ```
 
 ## Backup Video (1h)
-- [ ] Nagraj cały flow (OBS / screen record)
-- [ ] 2-3 minuty, clean run
-- [ ] Upload na YouTube/Google Drive (unlisted)
-- [ ] Link w README
+- [ ] Record full flow (OBS / screen record)
+- [ ] 2–3 minutes, clean run
+- [ ] Upload to YouTube/Google Drive (unlisted)
+- [ ] Link in README
 
 ## Final Checklist
-- [ ] Repo publiczne na GitHubie
-- [ ] README kompletne: opis, architektura, setup, screenshots
-- [ ] Licencja MIT w pliku LICENSE
-- [ ] requirements.txt / package.json aktualne
-- [ ] Brak hardkodowanych secrets (użyj env vars)
-- [ ] App działa na deploy URL
-- [ ] App działa na telefonie (mobile test)
-- [ ] Backup video nagrane
+- [ ] Public GitHub repo
+- [ ] README complete: description, architecture, setup, screenshots
+- [ ] MIT LICENSE file
+- [ ] requirements.txt / package.json up to date
+- [ ] No hardcoded secrets (use env vars)
+- [ ] App works on deploy URL
+- [ ] App works on phone (mobile test)
+- [ ] Backup video recorded
 
-## FINALNA SAMOOCENA — Hackathon Scorecard
+## FINAL SELF-ASSESSMENT — Hackathon Scorecard
 
 ```
 ╔══════════════════════════════════════════════════╗
@@ -134,33 +132,33 @@ tłumaczenia prostym językiem, i realnych danych NFZ o kolejkach."
 ╠══════════════════════════════════════════════════╣
 ║                                                  ║
 ║  IMPACT (30%)                    /10  →    /3.0  ║
-║  ├─ Realny problem (kolejki PL):      /10        ║
-║  ├─ Kto korzysta (pacjent+lekarz):    /10        ║
-║  ├─ Bliskość do produktu:             /10        ║
+║  ├─ Real problem (PL queues):         /10        ║
+║  ├─ Who benefits (patient+doctor):    /10        ║
+║  ├─ Product proximity:                /10        ║
 ║  └─ Problem statement fit (#1):       /10        ║
 ║                                                  ║
 ║  DEMO (25%)                      /10  →    /2.5  ║
-║  ├─ Działa end-to-end na żywo:        /10        ║
-║  ├─ "Wow" moment (skan/NFZ):          /10        ║
-║  └─ Wizualnie profesjonalne:          /10        ║
+║  ├─ Works end-to-end live:            /10        ║
+║  ├─ "Wow" moment (scan/NFZ):          /10        ║
+║  └─ Visually professional:            /10        ║
 ║                                                  ║
 ║  OPUS 4.7 USE (20%)             /10  →    /2.0  ║
-║  ├─ Ile sposobów użycia (cel 4+):     /10        ║
-║  ├─ Beyond basic (nie chatbot):       /10        ║
-║  └─ Zaskoczenie (hybryda ML+LLM):    /10        ║
+║  ├─ Number of use cases (aim 4+):     /10        ║
+║  ├─ Beyond basic (not chatbot):     /10        ║
+║  └─ Surprise (ML+LLM hybrid):        /10        ║
 ║                                                  ║
 ║  DEPTH & EXECUTION (20%)        /10  →    /2.0  ║
-║  ├─ Jakość kodu i architektury:       /10        ║
-║  ├─ Edge cases i error handling:      /10        ║
-║  └─ Iteracja i craft:                /10        ║
+║  ├─ Code and architecture quality:   /10        ║
+║  ├─ Edge cases and error handling:   /10        ║
+║  └─ Iteration and craft:             /10        ║
 ║                                                  ║
 ║  ══════════════════════════════════════════════   ║
 ║  TOTAL:                              /10.0       ║
 ╚══════════════════════════════════════════════════╝
 ```
 
-## Ostatnia rada
-Na demo: **nie tłumacz technologii — POKAŻ JĄ.**
-Mniej mówienia, więcej klikania. Sędziowie zapamiętają moment
-kiedy zrobiłeś zdjęcie kartki i system sam ją odczytał,
-nie slajd z architekturą BERT.
+## Last tip
+On demo day: **don't explain the stack — SHOW it.**
+Less talking, more clicking. Judges remember the moment
+you photographed the sheet and the system read it,
+not a BERT architecture slide.
