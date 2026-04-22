@@ -2,11 +2,19 @@
 """
 Multi-label fine-tuning with Cost-Sensitive Focal Loss.
 
+Cost matrix and focal loss definition:
+  Loss = mean[ (1 - p_t)^γ * BCE(logit, y) * c_j ]
+  where: p_t = σ(logit)*y + (1-σ(logit))*(1-y)
+         γ = focal loss exponent (controls hard example mining)
+         c_j = class-specific cost weight [POZ:1, GASTRO:5, HEMATO:7, NEFRO:7, SOR:10, ...]
+
 Usage:
-    python model/finetune_multilabel.py \\
-        --pretrained checkpoints/mlm/ \\
-        --corpus data/corpus.txt \\
-        --output checkpoints/finetune/
+    python model/finetune_multilabel.py \
+        --pretrained checkpoints/mlm/ \
+        --train-corpus data/train.txt \
+        --val-corpus data/val.txt \
+        --output checkpoints/finetune/ \
+        --focal-gamma 2.0
 """
 
 import argparse
@@ -114,12 +122,13 @@ class MultiLabelDataset(Dataset):
 
 
 class MultiLabelTrainer(Trainer):
-    """Custom trainer with FocalBCELoss."""
+    """Custom trainer with cost-sensitive FocalBCELoss."""
 
-    def __init__(self, cost_weights: torch.Tensor, *args, **kwargs):
+    def __init__(self, cost_weights: torch.Tensor, focal_gamma: float, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.cost_weights = cost_weights.to(self.model.device)
-        self.focal_loss = FocalBCELoss(self.cost_weights, gamma=2.0)
+        self.focal_loss = FocalBCELoss(self.cost_weights, gamma=focal_gamma)
+        logger.info(f"Initialized FocalBCELoss with gamma={focal_gamma}, cost_weights={cost_weights.tolist()}")
 
     def compute_loss(self, model, inputs, return_outputs=False):
         labels = inputs.pop("labels")
@@ -184,12 +193,13 @@ def compute_metrics(eval_pred: EvalPrediction) -> Dict:
 def main():
     parser = argparse.ArgumentParser(description="Fine-tune BERT for multi-label triage")
     parser.add_argument("--pretrained", type=Path, required=True, help="Pre-trained BERT dir")
-    parser.add_argument("--corpus", type=Path, required=True, help="Corpus file with sequences")
+    parser.add_argument("--train-corpus", type=Path, required=True, help="Train corpus file (patient-level split)")
+    parser.add_argument("--val-corpus", type=Path, required=True, help="Val corpus file (patient-level split)")
     parser.add_argument("--output", type=Path, default=Path("checkpoints/finetune/"))
     parser.add_argument("--epochs", type=int, default=5)
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--lr", type=float, default=2e-5)
-    parser.add_argument("--val-ratio", type=float, default=0.2)
+    parser.add_argument("--focal-gamma", type=float, default=2.0, help="Focal loss exponent")
 
     args = parser.parse_args()
     args.output = Path(args.output)
@@ -201,17 +211,9 @@ def main():
     logger.info(f"Loading tokenizer from {args.pretrained / 'tokenizer'}")
     tokenizer = load_tokenizer(args.pretrained / "tokenizer")
 
-    logger.info("Loading and splitting dataset")
-    full_dataset = MultiLabelDataset(args.corpus, tokenizer)
-
-    train_size = int(len(full_dataset) * (1 - args.val_ratio))
-    val_size = len(full_dataset) - train_size
-
-    train_dataset, val_dataset = torch.utils.data.random_split(
-        full_dataset,
-        [train_size, val_size],
-        generator=torch.Generator().manual_seed(42),
-    )
+    logger.info("Loading train and val datasets (patient-level split)")
+    train_dataset = MultiLabelDataset(args.train_corpus, tokenizer)
+    val_dataset = MultiLabelDataset(args.val_corpus, tokenizer)
 
     logger.info(f"Train: {len(train_dataset)}, Val: {len(val_dataset)}")
 
@@ -250,6 +252,7 @@ def main():
 
     trainer = MultiLabelTrainer(
         cost_weights=cost_weights_tensor,
+        focal_gamma=args.focal_gamma,
         model=model,
         args=training_args,
         train_dataset=train_dataset,

@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+venv/
+.venv/
+
+# Data — too large / sensitive
+data/synthea/
+data/mimic/
+
+# Generated corpus (rebuilt from data)
+data/train.txt
+data/val.txt
+data/mimic_test.txt
+data/corpus.txt
+
+# Model checkpoints
+checkpoints/
+*.pt
+*.bin
+*.safetensors
+
+# Logs
+logs/
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
