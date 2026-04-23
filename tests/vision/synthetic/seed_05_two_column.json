@@ -1,0 +1,67 @@
+{
+  "image": "seed_05_two_column.png",
+  "lab_chain": "SYNEVO",
+  "layout": "two_column",
+  "quality_tier": "clean",
+  "degradations": [],
+  "patient": {
+    "age": 28,
+    "sex": "f"
+  },
+  "ground_truth_values": {
+    "HGB": 14.2,
+    "WBC": 6.8,
+    "PLT": 230.0,
+    "MCV": 88.0,
+    "CREATININE": 0.9,
+    "ALT": 22.0,
+    "AST": 19.0,
+    "UREA": 15.0
+  },
+  "ground_truth_units": {
+    "HGB": "g/dL",
+    "WBC": "10^3/µL",
+    "PLT": "10^3/µL",
+    "MCV": "fL",
+    "CREATININE": "mg/dL",
+    "ALT": "U/L",
+    "AST": "U/L",
+    "UREA": "mg/dL"
+  },
+  "ground_truth_ref_ranges": {
+    "HGB": [
+      12.0,
+      16.0
+    ],
+    "WBC": [
+      4.5,
+      11.0
+    ],
+    "PLT": [
+      150.0,
+      400.0
+    ],
+    "MCV": [
+      80.0,
+      100.0
+    ],
+    "CREATININE": [
+      0.6,
+      1.1
+    ],
+    "ALT": [
+      7.0,
+      45.0
+    ],
+    "AST": [
+      10.0,
+      40.0
+    ],
+    "UREA": [
+      7.0,
+      20.0
+    ]
+  },
+  "ground_truth_collected_at": "2026-03-10",
+  "notes": "Two-column layout like some private labs use."
+}

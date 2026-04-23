@@ -1,0 +1,88 @@
+{
+  "parsed": {
+    "patient": {
+      "age": 52,
+      "sex": "M"
+    },
+    "lab_name": "ALAB",
+    "collected_at": "2026-03-01",
+    "parameters": [
+      {
+        "name": "HGB",
+        "value": 142,
+        "unit": "g/L",
+        "reference_low": 120,
+        "reference_high": 160,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "WBC",
+        "value": 6.8,
+        "unit": "10^3/µL",
+        "reference_low": 4.5,
+        "reference_high": 11.0,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "PLT",
+        "value": 230,
+        "unit": "10^3/µL",
+        "reference_low": 150,
+        "reference_high": 400,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "MCV",
+        "value": 88,
+        "unit": "fL",
+        "reference_low": 80,
+        "reference_high": 100,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "CREATININE",
+        "value": 0.9,
+        "unit": "mg/dL",
+        "reference_low": 0.6,
+        "reference_high": 1.1,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "ALT",
+        "value": 22,
+        "unit": "U/L",
+        "reference_low": 7,
+        "reference_high": 45,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "AST",
+        "value": 19,
+        "unit": "U/L",
+        "reference_low": 10,
+        "reference_high": 40,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "UREA",
+        "value": 15,
+        "unit": "mg/dL",
+        "reference_low": 7,
+        "reference_high": 20,
+        "source": "from_sheet",
+        "confidence": "high"
+      }
+    ],
+    "confidence": "high",
+    "notes": ""
+  },
+  "latency_ms": 8904,
+  "cost_estimate_usd": 0.088545
+}
