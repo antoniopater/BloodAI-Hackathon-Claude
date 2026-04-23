@@ -4,6 +4,7 @@ FastAPI backend for BloodAI triage system.
 
 Endpoints:
 - POST /predict — predict triage from lab values
+- POST /scan — Opus Vision OCR (see api.scan)
 - GET /lab_norms — get reference ranges
 - GET /questions/{param} — get adaptive interview questions
 """
@@ -32,6 +33,10 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="BloodAI Triage API", version="1.0")
+
+# Mount the Vision OCR endpoint (POST /scan).
+from api.scan import scan_router  # noqa: E402
+app.include_router(scan_router)
 
 MODEL_PATH = None
 TOKENIZER = None

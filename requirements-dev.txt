@@ -1,0 +1,10 @@
+# Dev / test dependencies for the Vision validation harness.
+# Install with: pip install -r requirements-dev.txt
+pytest>=7.4
+pytest-xdist>=3.3          # parallelise the harness across cached cases
+jiwer>=3.0                 # Character / Word Error Rate
+editdistance>=0.6          # fuzzy field comparisons
+Pillow>=10.0               # image augmentations
+opencv-python>=4.9         # rotation / perspective / glare synth
+playwright>=1.40           # HTML → PNG for synthetic lab sheets
+pdf2image>=1.17            # fallback first-page render for multi-page PDFs
