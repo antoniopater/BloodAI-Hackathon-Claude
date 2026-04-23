@@ -36,3 +36,21 @@ notebooks/.ipynb_checkpoints/
 # IDE
 .idea/
 .vscode/
+
+# Training logs (nohup outputs)
+nohup*.out
+
+# Jupyter
+.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
+
+# Synthea JAR (binary, large)
+synthea.jar
+
+# Frontend build (will be generated)
+frontend/node_modules/
+frontend/.next/
+frontend/dist/
+
+# External tools (ethos, etc)
+ethos/
