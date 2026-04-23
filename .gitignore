@@ -9,6 +9,7 @@ venv/
 # Data — too large / sensitive
 data/synthea/
 data/mimic/
+data/scans/
 
 # Generated corpus (rebuilt from data)
 data/train.txt
@@ -25,10 +26,6 @@ checkpoints/
 # Logs
 logs/
 *.log
-
-# Jupyter
-.ipynb_checkpoints/
-notebooks/.ipynb_checkpoints/
 
 # macOS
 .DS_Store
