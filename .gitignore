@@ -8,6 +8,7 @@ venv/
 
 # Data — too large / sensitive
 data/synthea/
+data/synthea_new/
 data/mimic/
 data/scans/
 
