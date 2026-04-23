@@ -38,6 +38,10 @@ TOKENIZER = None
 MODEL = None
 LAB_NORMS = None
 QUESTIONS_BANK = None
+CLASS_THRESHOLDS: Dict[str, float] = {
+    "SOR": 0.35, "NEFRO": 0.45, "HEMATO": 0.45, "CARDIO": 0.45,
+    "PULMO": 0.45, "GASTRO": 0.45, "HEPATO": 0.45, "POZ": 0.55,
+}
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -69,22 +73,31 @@ async def startup():
     global TOKENIZER, MODEL, LAB_NORMS, QUESTIONS_BANK, MODEL_PATH
 
     config_dir = Path(__file__).parent.parent / "config"
+    data_dir = Path(__file__).parent.parent / "data"
     LAB_NORMS = load_lab_norms(config_dir / "lab_norms.json")
-    QUESTIONS_BANK = load_questions_bank(config_dir / "questions.json")
+    QUESTIONS_BANK = load_questions_bank(data_dir / "questions.json")
 
     logger.info("BloodAI API ready")
 
 
 def load_model(model_path: Path):
-    """Lazy-load model."""
-    global TOKENIZER, MODEL
+    """Lazy-load model and calibrated thresholds (if available)."""
+    global TOKENIZER, MODEL, CLASS_THRESHOLDS
 
     logger.info(f"Loading model from {model_path}")
-
     TOKENIZER = load_tokenizer(model_path / "tokenizer")
     MODEL = BertForMultiLabelClassification.from_pretrained(model_path)
     MODEL = MODEL.to(DEVICE)
     MODEL.eval()
+
+    thresholds_path = model_path / "class_thresholds.json"
+    if thresholds_path.exists():
+        import json as _json
+        with open(thresholds_path) as f:
+            CLASS_THRESHOLDS.update(_json.load(f))
+        logger.info(f"Loaded calibrated thresholds from {thresholds_path}")
+    else:
+        logger.info("No class_thresholds.json found — using defaults")
 
     logger.info("Model loaded")
 
@@ -162,13 +175,14 @@ async def predict(request: PredictRequest, model_path: Optional[Path] = None):
     for class_idx, class_name in REVERSE_LABEL_MAP.items():
         prob = float(probs[class_idx])
         probabilities[class_name] = prob
-
-        if class_name == "SOR" and prob > 0.35:
-            flags.append("SOR")
-        elif class_name != "SOR" and class_name != "POZ" and prob > 0.55:
+        thr = CLASS_THRESHOLDS.get(class_name, 0.5)
+        if prob > thr and class_name != "POZ":
             flags.append(class_name)
 
-    if not flags:
+    # SOR takes precedence — if flagged, suppress other specialists
+    if "SOR" in flags:
+        flags = ["SOR"]
+    elif not flags:
         flags = ["POZ"]
 
     attention_data = None
@@ -201,21 +215,34 @@ async def get_lab_norms():
 
 
 @app.get("/questions/{param}")
-async def get_questions(param: str):
-    """Get adaptive interview questions for a parameter."""
+async def get_questions(param: str, age: Optional[int] = None):
+    """Get adaptive interview questions for a parameter trigger.
+
+    QUESTIONS_BANK is keyed by age group (kids/under_30/under_60/seniors).
+    We flatten across age groups and filter by trigger, optionally restricting
+    to the relevant age group when age is provided.
+    """
+    global QUESTIONS_BANK
     if not QUESTIONS_BANK:
-        config_dir = Path(__file__).parent.parent / "config"
-        QUESTIONS_BANK = load_questions_bank(config_dir / "questions.json")
+        data_dir = Path(__file__).parent.parent / "data"
+        QUESTIONS_BANK = load_questions_bank(data_dir / "questions.json")
 
-    trigger_key = f"{param.upper()}_LOW"
+    param_upper = param.upper()
+    trigger_low = f"{param_upper}_LOW"
+    trigger_high = f"{param_upper}_HIGH"
 
-    if trigger_key not in QUESTIONS_BANK:
-        trigger_key = f"{param.upper()}_HIGH"
+    from data.utils import get_age_group
+    target_group = get_age_group(age) if age is not None else None
 
-    if trigger_key not in QUESTIONS_BANK:
-        return {"questions": []}
+    matched = []
+    for group, rules in QUESTIONS_BANK.items():
+        if target_group and group != target_group:
+            continue
+        for rule in rules:
+            if rule.get("trigger") in (trigger_low, trigger_high):
+                matched.append({**rule, "age_group": group})
 
-    return {"questions": QUESTIONS_BANK[trigger_key]}
+    return {"questions": matched}
 
 
 @app.get("/health")

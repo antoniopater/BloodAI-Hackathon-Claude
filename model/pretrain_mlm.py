@@ -33,7 +33,10 @@ logger = logging.getLogger(__name__)
 
 
 class LineByLineTextDataset(Dataset):
-    """Dataset that reads corpus line-by-line and tokenizes on-the-fly."""
+    """Dataset that reads corpus line-by-line and tokenizes on-the-fly.
+
+    TARGET_ labels are stripped so they don't consume vocab slots or get masked.
+    """
 
     def __init__(self, file_path: Path, tokenizer, max_length: int = 128):
         self.tokenizer = tokenizer
@@ -41,7 +44,10 @@ class LineByLineTextDataset(Dataset):
 
         logger.info(f"Loading dataset from {file_path}")
         with open(file_path, "r") as f:
-            self.lines = [line.rstrip("\n") for line in f.readlines()]
+            raw = [line.rstrip("\n") for line in f.readlines()]
+
+        # Strip TARGET_ suffix — MLM learns token distributions, not labels
+        self.lines = [line.split(" TARGET_")[0] if " TARGET_" in line else line for line in raw]
 
         logger.info(f"Loaded {len(self.lines)} lines")
 
@@ -71,7 +77,8 @@ def main():
     parser.add_argument("--epochs", type=int, default=15)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--lr", type=float, default=1e-4)
-    parser.add_argument("--vocab-size", type=int, default=143)
+    parser.add_argument("--vocab-size", type=int, default=500, help="Vocab size cap (actual size determined by corpus; 300-500 covers all medical tokens)")
+    parser.add_argument("--max-samples", type=int, default=None, help="Limit training samples (for quick runs)")
 
     args = parser.parse_args()
 
@@ -87,8 +94,29 @@ def main():
     vocab_size = get_vocab_size(tokenizer)
     logger.info(f"Vocab size: {vocab_size}")
 
-    logger.info("Loading dataset")
-    dataset = LineByLineTextDataset(args.corpus, tokenizer)
+    logger.info("Loading and splitting corpus (90/10 train/val)")
+    full_dataset = LineByLineTextDataset(args.corpus, tokenizer)
+
+    import random as _random
+    all_lines = list(full_dataset.lines)
+    _random.seed(42)
+    _random.shuffle(all_lines)
+    split_idx = int(len(all_lines) * 0.9)
+    train_lines, val_lines = all_lines[:split_idx], all_lines[split_idx:]
+    logger.info(f"Split: {len(train_lines)} train / {len(val_lines)} val")
+
+    full_dataset.lines = train_lines
+    dataset = full_dataset
+
+    val_dataset = LineByLineTextDataset.__new__(LineByLineTextDataset)
+    val_dataset.tokenizer = tokenizer
+    val_dataset.max_length = full_dataset.max_length
+    val_dataset.lines = val_lines
+
+    if args.max_samples and args.max_samples < len(dataset):
+        from torch.utils.data import Subset
+        dataset = Subset(dataset, range(args.max_samples))
+        logger.info(f"Limiting to {args.max_samples} samples")
 
     logger.info(f"Creating BERT config (vocab_size={vocab_size})")
     config = get_bert_config(vocab_size=vocab_size)
@@ -136,15 +164,17 @@ def main():
         warmup_steps=500,
         save_total_limit=3,
         save_strategy="epoch",
+        eval_strategy="epoch",
         logging_steps=100,
         logging_dir=str(args.output / "logs"),
         report_to="none",
         seed=42,
-        dataloader_pin_memory=True,
-        dataloader_num_workers=4 if device == "cuda" else 0,
+        dataloader_pin_memory=False,
+        dataloader_num_workers=0,
         max_grad_norm=1.0,
         load_best_model_at_end=True,
         metric_for_best_model="loss",
+        greater_is_better=False,
     )
 
     trainer = Trainer(
@@ -152,6 +182,7 @@ def main():
         args=training_args,
         data_collator=data_collator,
         train_dataset=dataset,
+        eval_dataset=val_dataset,
         callbacks=[EarlyStoppingCallback(early_stopping_patience=3)],
     )
 

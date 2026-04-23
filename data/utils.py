@@ -56,8 +56,8 @@ def get_lab_token_v2(
     if value < crit_low:
         return f"{test_normalized}_CRITICAL_LOW"
     elif value < low:
-        q = int((value - low) / q_width) + 1
-        return f"{test_normalized}_Q{min(q, 5)}"
+        q = int((low - value) / q_width) + 1  # positive: larger deviation → higher Q
+        return f"{test_normalized}_Q{max(1, min(5, q))}"
     elif value <= high:
         q = 5 + int((value - low) / q_width)
         return f"{test_normalized}_Q{min(q, 10)}"
@@ -103,18 +103,13 @@ def load_lab_norms(norms_path: Path) -> Dict:
 
 
 def load_questions_bank(questions_path: Path) -> Dict[str, List[Dict]]:
-    """Load adaptive interview questions from JSON config."""
+    """Load adaptive interview questions from JSON config.
+
+    Returns dict keyed by age group: {"kids": [...], "under_30": [...], ...}
+    Each entry is a list of question rules with trigger, token_yes, token_no fields.
+    """
     with open(questions_path) as f:
-        data = json.load(f)
-
-    by_trigger = {}
-    for q in data:
-        trigger = q.get("trigger", "")
-        if trigger not in by_trigger:
-            by_trigger[trigger] = []
-        by_trigger[trigger].append(q)
-
-    return by_trigger
+        return json.load(f)
 
 
 def load_icd_mapping(mapping_path: Path) -> Dict[str, str]:

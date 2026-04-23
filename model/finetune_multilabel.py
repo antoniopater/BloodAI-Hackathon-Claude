@@ -61,6 +61,18 @@ COST_MATRIX = {
     "POZ": 1.0,
 }
 
+# Per-class decision thresholds aligned with clinical safety priorities
+CLASS_THRESHOLDS = {
+    "SOR":    0.35,  # lower → miss fewer emergencies
+    "NEFRO":  0.45,
+    "HEMATO": 0.45,
+    "CARDIO": 0.45,
+    "PULMO":  0.45,
+    "GASTRO": 0.45,
+    "HEPATO": 0.45,
+    "POZ":    0.55,
+}
+
 
 class MultiLabelDataset(Dataset):
     """Dataset for multi-label classification."""
@@ -130,7 +142,7 @@ class MultiLabelTrainer(Trainer):
         self.focal_loss = FocalBCELoss(self.cost_weights, gamma=focal_gamma)
         logger.info(f"Initialized FocalBCELoss with gamma={focal_gamma}, cost_weights={cost_weights.tolist()}")
 
-    def compute_loss(self, model, inputs, return_outputs=False):
+    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
         labels = inputs.pop("labels")
         outputs = model(**inputs, output_attentions=True)
         logits = outputs.logits
@@ -156,7 +168,8 @@ def compute_metrics(eval_pred: EvalPrediction) -> Dict:
         except Exception:
             results[f"roc_auc_{class_name}"] = 0.0
 
-        pred_binary = (probs[:, class_idx] > 0.5).astype(int)
+        threshold = CLASS_THRESHOLDS.get(class_name, 0.5)
+        pred_binary = (probs[:, class_idx] > threshold).astype(int)
         true_binary = label_ids[:, class_idx].astype(int)
 
         try:
@@ -233,21 +246,23 @@ def main():
         overwrite_output_dir=True,
         num_train_epochs=args.epochs,
         per_device_train_batch_size=args.batch_size,
-        per_device_eval_batch_size=args.batch_size * 2,
+        per_device_eval_batch_size=16,
         learning_rate=args.lr,
         weight_decay=0.01,
         warmup_steps=300,
         save_total_limit=2,
         save_strategy="epoch",
         evaluation_strategy="epoch",
+        eval_accumulation_steps=32,
         logging_steps=50,
         logging_dir=str(args.output / "logs"),
         report_to="none",
         seed=42,
         load_best_model_at_end=True,
         metric_for_best_model="macro_roc_auc",
-        dataloader_pin_memory=True,
-        dataloader_num_workers=4 if device == "cuda" else 0,
+        greater_is_better=True,
+        dataloader_pin_memory=False,
+        dataloader_num_workers=0,
     )
 
     trainer = MultiLabelTrainer(

@@ -6,7 +6,7 @@ from transformers import PreTrainedTokenizerFast
 
 def build_tokenizer_from_corpus(
     corpus_path: Path,
-    vocab_size: int = 143,
+    vocab_size: int = 500,
     min_frequency: int = 1,
     output_dir: Optional[Path] = None,
 ) -> PreTrainedTokenizerFast:

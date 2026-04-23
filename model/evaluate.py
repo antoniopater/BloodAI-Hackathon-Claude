@@ -7,6 +7,7 @@ Usage:
 """
 
 import argparse
+import json
 import logging
 from pathlib import Path
 from typing import Dict, List, Tuple
@@ -14,12 +15,35 @@ from typing import Dict, List, Tuple
 import torch
 import torch.nn as nn
 import numpy as np
+from torch.utils.data import Dataset, DataLoader
 from sklearn.metrics import roc_auc_score, roc_curve, confusion_matrix, f1_score
 import matplotlib.pyplot as plt
 
 from model.bert_model import BertForMultiLabelClassification, LABEL_MAP, REVERSE_LABEL_MAP
 from model.tokenizer import load_tokenizer
 from model.losses import ECELoss
+
+
+class _EvalDataset(Dataset):
+    """Minimal dataset for temperature scaling DataLoader."""
+    def __init__(self, inputs, labels, tokenizer):
+        self.inputs = inputs
+        self.labels = labels
+        self.tokenizer = tokenizer
+
+    def __len__(self):
+        return len(self.inputs)
+
+    def __getitem__(self, idx):
+        enc = self.tokenizer(
+            self.inputs[idx], max_length=128, padding="max_length",
+            truncation=True, return_tensors="pt",
+        )
+        return {
+            "input_ids": enc["input_ids"].squeeze(),
+            "attention_mask": enc["attention_mask"].squeeze(),
+            "labels": torch.tensor(self.labels[idx], dtype=torch.float32),
+        }
 
 
 logging.basicConfig(level=logging.INFO)
@@ -47,35 +71,35 @@ class ModelWithTemperature(nn.Module):
         logits = outputs.logits / self.temperature
         return logits
 
-    def set_temperature(self, valid_loader, device: str = "cuda"):
-        """Tune temperature using LBFGS on validation set."""
+    def set_temperature(self, valid_loader, device: str = "cpu"):
+        """Tune temperature using LBFGS on validation set (multi-label BCE)."""
         self.model.eval()
+        self.to(device)
 
-        nll_criterion = nn.CrossEntropyLoss()
+        # Collect all logits and labels in one pass (no grad needed here)
+        all_logits, all_labels = [], []
+        with torch.no_grad():
+            for batch in valid_loader:
+                input_ids = batch["input_ids"].to(device)
+                attention_mask = batch["attention_mask"].to(device)
+                labels = batch["labels"].to(device)
+                outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
+                all_logits.append(outputs.logits.detach())
+                all_labels.append(labels.detach())
+
+        all_logits = torch.cat(all_logits)
+        all_labels = torch.cat(all_labels)
+
+        bce = nn.BCEWithLogitsLoss()
         optimizer = torch.optim.LBFGS([self.temperature], lr=0.01, max_iter=50)
 
         def eval_():
             optimizer.zero_grad()
-            loss = torch.zeros(1, device=device)
-
-            with torch.no_grad():
-                for batch in valid_loader:
-                    input_ids = batch["input_ids"].to(device)
-                    attention_mask = batch["attention_mask"].to(device)
-                    labels = batch["labels"].to(device)
-
-                    logits = self.forward(input_ids, attention_mask)
-
-                    for i in range(logits.shape[1]):
-                        loss += nll_criterion(
-                            logits[:, i:i+1], labels[:, i].long()
-                        )
-
+            loss = bce(all_logits / self.temperature, all_labels)
             loss.backward()
             return loss
 
         optimizer.step(eval_)
-
         return self.temperature.item()
 
 
@@ -105,45 +129,125 @@ def compute_ece(probs: np.ndarray, targets: np.ndarray, n_bins: int = 15) -> flo
     return ece / max(count, 1)
 
 
+CLASS_THRESHOLDS = {
+    "SOR":    0.35,
+    "NEFRO":  0.45,
+    "HEMATO": 0.45,
+    "CARDIO": 0.45,
+    "PULMO":  0.45,
+    "GASTRO": 0.45,
+    "HEPATO": 0.45,
+    "POZ":    0.55,
+}
+
+# Cost weights per class — same as COST_MATRIX in finetune_multilabel.py
+_COST_WEIGHTS = {
+    "SOR": 10.0, "NEFRO": 7.0, "HEMATO": 7.0, "CARDIO": 5.0,
+    "PULMO": 5.0, "GASTRO": 5.0, "HEPATO": 4.0, "POZ": 1.0,
+}
+
+
+def calibrate_thresholds(
+    probs: np.ndarray,
+    labels: np.ndarray,
+    cost_weights: Dict[str, float] = None,
+    output_path: Path = None,
+) -> Dict[str, float]:
+    """
+    Find optimal decision threshold per class by minimising cost-weighted error
+    on the ROC curve:  cost(t) = w_c * FNR(t) + FPR(t)
+
+    Args:
+        probs:        [N, num_classes] probability matrix (post-sigmoid)
+        labels:       [N, num_classes] binary ground-truth
+        cost_weights: per-class miss-cost; higher → lower threshold for that class
+        output_path:  if given, save thresholds to JSON at this path
+
+    Returns:
+        Dict mapping class name → optimal threshold
+    """
+    if cost_weights is None:
+        cost_weights = _COST_WEIGHTS
+
+    thresholds: Dict[str, float] = {}
+
+    logger.info("=" * 60)
+    logger.info("THRESHOLD CALIBRATION  (minimise  w·FNR + FPR)")
+    logger.info("=" * 60)
+
+    for class_idx, class_name in REVERSE_LABEL_MAP.items():
+        class_probs = probs[:, class_idx]
+        class_labels = labels[:, class_idx]
+        w = cost_weights.get(class_name, 1.0)
+
+        # Need at least one positive to compute ROC
+        if class_labels.sum() == 0:
+            thresholds[class_name] = CLASS_THRESHOLDS.get(class_name, 0.5)
+            logger.warning(f"{class_name:12} | no positives in data — keeping default {thresholds[class_name]:.2f}")
+            continue
+
+        fpr_arr, tpr_arr, thr_arr = roc_curve(class_labels, class_probs)
+        fnr_arr = 1.0 - tpr_arr
+        # Minimise w·FNR + FPR (first point has thr=inf, skip it)
+        cost_arr = w * fnr_arr[1:] + fpr_arr[1:]
+        best_idx = int(np.argmin(cost_arr))
+        best_thr = float(np.clip(thr_arr[1:][best_idx], 0.01, 0.99))
+
+        thresholds[class_name] = round(best_thr, 4)
+        logger.info(
+            f"{class_name:12} | w={w:4.1f} | "
+            f"thr={best_thr:.3f}  "
+            f"FNR={fnr_arr[1:][best_idx]:.3f}  FPR={fpr_arr[1:][best_idx]:.3f}"
+        )
+
+    logger.info("=" * 60)
+
+    if output_path is not None:
+        output_path = Path(output_path)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(output_path, "w") as f:
+            json.dump(thresholds, f, indent=2)
+        logger.info(f"Thresholds saved → {output_path}")
+
+    return thresholds
+
+
 def safety_predict(
     probs: np.ndarray,
-    threshold_sor: float = 0.35,
-    threshold_spec: float = 0.60,
-) -> List[str]:
+    thresholds: Dict = None,
+) -> List[List[str]]:
     """
-    Apply safety-first logic: prioritize SOR, then specialists, fallback to POZ.
+    Apply safety-first multi-label logic with per-class thresholds.
 
     Args:
         probs: [num_samples, 8] probability matrix
-        threshold_sor: SOR threshold
-        threshold_spec: specialist threshold
+        thresholds: per-class thresholds (defaults to CLASS_THRESHOLDS)
 
     Returns:
-        list of predicted classes per sample
+        list of predicted class lists per sample (multi-label)
     """
+    if thresholds is None:
+        thresholds = CLASS_THRESHOLDS
+
     predictions = []
 
     for sample_idx in range(probs.shape[0]):
         sample_probs = probs[sample_idx]
+        classes = []
 
-        sor_idx = LABEL_MAP["SOR"]
-        if sample_probs[sor_idx] > threshold_sor:
-            predictions.append("SOR")
-            continue
+        for class_idx, class_name in REVERSE_LABEL_MAP.items():
+            thr = thresholds.get(class_name, 0.5)
+            if sample_probs[class_idx] > thr:
+                classes.append(class_name)
 
-        specialist_indices = [
-            i for i in range(len(LABEL_MAP))
-            if REVERSE_LABEL_MAP[i] != "SOR" and REVERSE_LABEL_MAP[i] != "POZ"
-        ]
-        specialist_probs = [sample_probs[i] for i in specialist_indices]
-        max_spec_prob = max(specialist_probs) if specialist_probs else 0
+        # SOR takes precedence: if flagged, drop other non-SOR classes
+        if "SOR" in classes and len(classes) > 1:
+            classes = ["SOR"]
 
-        if max_spec_prob > threshold_spec:
-            best_specialist_idx = specialist_indices[np.argmax(specialist_probs)]
-            predictions.append(REVERSE_LABEL_MAP[best_specialist_idx])
-            continue
+        if not classes:
+            classes = ["POZ"]
 
-        predictions.append("POZ")
+        predictions.append(classes)
 
     return predictions
 
@@ -227,6 +331,7 @@ def main():
     logger.info("EVALUATION RESULTS")
     logger.info("=" * 60)
 
+    # --- Pre-calibration metrics (default 0.5 threshold) ---
     for class_idx, class_name in REVERSE_LABEL_MAP.items():
         class_probs = all_probs[:, class_idx]
         class_targets = all_labels[:, class_idx]
@@ -235,17 +340,51 @@ def main():
         pred_binary = (class_probs > 0.5).astype(int)
         f1 = f1_score(class_targets, pred_binary, zero_division=0)
 
-        logger.info(f"{class_name:12} | AUC: {auc:.3f} | F1: {f1:.3f}")
+        logger.info(f"{class_name:12} | AUC: {auc:.3f} | F1@0.5: {f1:.3f}")
 
     ece = compute_ece(all_probs, all_labels)
     logger.info(f"{'ECE':12} | {ece:.4f} (target < 0.012)")
-
     logger.info("=" * 60)
 
-    logger.info("\nTesting temperature scaling...")
+    # --- Temperature scaling ---
+    logger.info("\nCalibrating with temperature scaling...")
+    eval_ds = _EvalDataset(all_inputs, all_labels, tokenizer)
+    eval_loader = DataLoader(eval_ds, batch_size=64, shuffle=False)
     model_with_temp = ModelWithTemperature(model)
+    temp = model_with_temp.set_temperature(eval_loader, device=str(device))
+    logger.info(f"Optimal temperature: {temp:.4f}  (1.0 = already calibrated)")
 
-    logger.info("Final model calibration complete!")
+    cal_probs = []
+    with torch.no_grad():
+        for batch in eval_loader:
+            input_ids = batch["input_ids"].to(device)
+            attention_mask = batch["attention_mask"].to(device)
+            logits = model_with_temp(input_ids, attention_mask)
+            cal_probs.append(torch.sigmoid(logits).cpu().numpy())
+    cal_probs = np.vstack(cal_probs)
+    ece_cal = compute_ece(cal_probs, all_labels)
+    logger.info(f"ECE after calibration: {ece_cal:.4f} (before: {ece:.4f})")
+
+    # --- Threshold calibration on ROC curve (post temperature scaling) ---
+    thresholds_path = args.model / "class_thresholds.json"
+    calibrated_thresholds = calibrate_thresholds(
+        cal_probs, all_labels, output_path=thresholds_path
+    )
+
+    # --- Final metrics with calibrated thresholds ---
+    logger.info("=" * 60)
+    logger.info("FINAL METRICS (calibrated thresholds)")
+    logger.info("=" * 60)
+    for class_idx, class_name in REVERSE_LABEL_MAP.items():
+        class_probs = cal_probs[:, class_idx]
+        class_targets = all_labels[:, class_idx]
+        thr = calibrated_thresholds[class_name]
+
+        auc = roc_auc_score(class_targets, class_probs)
+        pred_binary = (class_probs > thr).astype(int)
+        f1 = f1_score(class_targets, pred_binary, zero_division=0)
+        logger.info(f"{class_name:12} | AUC: {auc:.3f} | F1@{thr:.2f}: {f1:.3f}")
+    logger.info("=" * 60)
 
 
 if __name__ == "__main__":

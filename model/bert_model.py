@@ -19,7 +19,7 @@ REVERSE_LABEL_MAP = {v: k for k, v in LABEL_MAP.items()}
 NUM_CLASSES = len(LABEL_MAP)
 
 
-def get_bert_config(vocab_size: int = 143) -> BertConfig:
+def get_bert_config(vocab_size: int = 500) -> BertConfig:
     """Return BERT config matching paper specifications."""
     return BertConfig(
         vocab_size=vocab_size,
