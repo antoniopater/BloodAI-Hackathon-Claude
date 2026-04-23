@@ -1,0 +1,23 @@
+{
+  "image": "scan_008.png",
+  "lab_chain": "DIAGNOSTIC_POINT",
+  "layout": "single_column",
+  "quality_tier": "clean",
+  "degradations": [],
+  "patient": {"age": null, "sex": null},
+  "ground_truth_values": {
+    "AST": 112.0,
+    "ALT": 89.0
+  },
+  "ground_truth_units": {
+    "AST": "U/L",
+    "ALT": "U/L"
+  },
+  "ground_truth_ref_ranges": {
+    "AST": [0.0, 45.0],
+    "ALT": [0.0, 49.0]
+  },
+  "ground_truth_collected_at": "2025-04-23",
+  "phi_status": "image_redacted",
+  "notes": "Liver Function Test (LFT). AST(SGOT)=112 H, ALT(SGPT)=89 H — elevated (hepatitis/liver disease). Bilirubin Total=8.21 H, ALP=438 H, Albumin=3.2 L. Sarvodaya Hospital. Tests ability to map SGOT→AST and SGPT→ALT synonyms."
+}

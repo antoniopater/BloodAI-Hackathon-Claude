@@ -1,0 +1,23 @@
+{
+  "image": "scan_006.png",
+  "lab_chain": "AIG_HOSPITALS",
+  "layout": "single_column",
+  "quality_tier": "clean",
+  "degradations": [],
+  "patient": {"age": null, "sex": null},
+  "ground_truth_values": {
+    "HGB": 10.0,
+    "PLT": 233.0
+  },
+  "ground_truth_units": {
+    "HGB": "g/dL",
+    "PLT": "K/uL"
+  },
+  "ground_truth_ref_ranges": {
+    "HGB": [12.0, 16.0],
+    "PLT": [150.0, 410.0]
+  },
+  "ground_truth_collected_at": "2025-04-28",
+  "phi_status": "image_redacted",
+  "notes": "Partial CBC from AIG. Shows absolute counts and PLT. HGB=10.0 low. Neutrophil-Lymphocyte Ratio=15.9 (elevated, inflammatory marker). Eosinophil abs=36, Monocyte abs=436. Patient fields blacked out."
+}

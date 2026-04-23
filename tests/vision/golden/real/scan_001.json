@@ -1,0 +1,29 @@
+{
+  "image": "scan_001.png",
+  "lab_chain": "SHREE_DIAGNOSTIC",
+  "layout": "single_column",
+  "quality_tier": "clean",
+  "degradations": [],
+  "patient": {"age": null, "sex": "m"},
+  "ground_truth_values": {
+    "HGB": 11.0,
+    "WBC": 6.22,
+    "PLT": 125.0,
+    "MCV": 73.08
+  },
+  "ground_truth_units": {
+    "HGB": "g/dL",
+    "WBC": "K/uL",
+    "PLT": "K/uL",
+    "MCV": "fl"
+  },
+  "ground_truth_ref_ranges": {
+    "HGB": [13.0, 17.0],
+    "WBC": [4.0, 10.0],
+    "PLT": [150.0, 400.0],
+    "MCV": [80.0, 100.0]
+  },
+  "ground_truth_collected_at": "2025-04-28",
+  "phi_status": "filename_only",
+  "notes": "CBC with platelet indices section. PLT=125 borderline low. MCV=73 microcytic. MCH=22.77 pg, MCHC=31.16 g/dL, RDW=16.9%. Three PLT measurements shown (125k/117k/209k) — use first."
+}

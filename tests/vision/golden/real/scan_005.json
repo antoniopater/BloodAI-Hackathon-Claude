@@ -1,0 +1,26 @@
+{
+  "image": "scan_005.png",
+  "lab_chain": "AIG_HOSPITALS",
+  "layout": "single_column",
+  "quality_tier": "clean",
+  "degradations": [],
+  "patient": {"age": null, "sex": null},
+  "ground_truth_values": {
+    "HGB": 13.7,
+    "WBC": 8.12,
+    "MCV": 94.1
+  },
+  "ground_truth_units": {
+    "HGB": "g/dL",
+    "WBC": "K/uL",
+    "MCV": "fl"
+  },
+  "ground_truth_ref_ranges": {
+    "HGB": [13.0, 17.0],
+    "WBC": [4.0, 10.0],
+    "MCV": [83.0, 101.8]
+  },
+  "ground_truth_collected_at": "2025-04-28",
+  "phi_status": "image_redacted",
+  "notes": "CBC from AIG Hospitals. All values normal. RBC=4.51, PCV=42.6%, MCH=30.4 pg, MCHC=32.2 g/dL, RDW=12.8%. PLT not visible on this page section. Differential: Neutrophils=76.9%, Lymphocytes=13.3%(L)."
+}

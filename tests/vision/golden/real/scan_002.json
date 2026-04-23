@@ -1,0 +1,29 @@
+{
+  "image": "scan_002.png",
+  "lab_chain": "SHREE_DIAGNOSTIC",
+  "layout": "single_column",
+  "quality_tier": "clean",
+  "degradations": [],
+  "patient": {"age": null, "sex": null},
+  "ground_truth_values": {
+    "HGB": 9.10,
+    "WBC": 10.56,
+    "PLT": 370.0,
+    "MCV": 85.30
+  },
+  "ground_truth_units": {
+    "HGB": "g/dL",
+    "WBC": "K/uL",
+    "PLT": "K/uL",
+    "MCV": "fl"
+  },
+  "ground_truth_ref_ranges": {
+    "HGB": [13.0, 17.0],
+    "WBC": [4.0, 10.0],
+    "PLT": [150.0, 450.0],
+    "MCV": [83.0, 101.0]
+  },
+  "ground_truth_collected_at": null,
+  "phi_status": "image_redacted",
+  "notes": "Complete Blood Count. HGB=9.10 g/dL severely low (anemia). WBC=10560/ul slightly elevated. MCH=28.50 pg, MCHC=33.50 g/dL, RDW=16.5% (H). Absolute counts also present. Patient fields blacked out in image."
+}

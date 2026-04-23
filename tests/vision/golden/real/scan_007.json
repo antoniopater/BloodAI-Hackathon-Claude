@@ -1,0 +1,20 @@
+{
+  "image": "scan_007.png",
+  "lab_chain": "AIG_HOSPITALS",
+  "layout": "single_column",
+  "quality_tier": "clean",
+  "degradations": [],
+  "patient": {"age": 32, "sex": "m"},
+  "ground_truth_values": {
+    "CREATININE": 1.04
+  },
+  "ground_truth_units": {
+    "CREATININE": "mg/dL"
+  },
+  "ground_truth_ref_ranges": {
+    "CREATININE": [0.67, 1.17]
+  },
+  "ground_truth_collected_at": null,
+  "phi_status": "phi_visible",
+  "notes": "Serum Creatinine only. CREATININE=1.04 mg/dL (normal). Age 32 Male visible in image. CAUTION: patient name partially visible in image — redact before committing to production."
+}

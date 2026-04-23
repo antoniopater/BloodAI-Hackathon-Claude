@@ -1,0 +1,29 @@
+{
+  "image": "scan_004.png",
+  "lab_chain": "SHREE_DIAGNOSTIC",
+  "layout": "single_column",
+  "quality_tier": "clean",
+  "degradations": [],
+  "patient": {"age": null, "sex": null},
+  "ground_truth_values": {
+    "HGB": 12.1,
+    "WBC": 13.6,
+    "PLT": 502.0,
+    "MCV": 86.7
+  },
+  "ground_truth_units": {
+    "HGB": "g/dL",
+    "WBC": "K/uL",
+    "PLT": "K/uL",
+    "MCV": "fl"
+  },
+  "ground_truth_ref_ranges": {
+    "HGB": [13.0, 17.0],
+    "WBC": [4.0, 11.0],
+    "PLT": [150.0, 400.0],
+    "MCV": [83.0, 101.0]
+  },
+  "ground_truth_collected_at": null,
+  "phi_status": "image_redacted",
+  "notes": "CBC. WBC=13600 cells/cumm elevated (infection/inflammation). PLT=502000 cells/cumm elevated (thrombocytosis). HGB=12.1 borderline low. MCH=24.7 pg low, MCHC=28.5 low. Shree Diagnostic page 27."
+}

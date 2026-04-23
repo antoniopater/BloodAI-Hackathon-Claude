@@ -1,0 +1,7 @@
+# Images flagged phi_status=phi_visible require manual redaction before committing.
+# scan_007.png — patient name visible, redact first.
+#
+# To redact: open in Preview → Markup → Rectangle (filled black) → cover name field → Save
+#
+# Uncomment line below to block ALL images until manually verified:
+# *.png
