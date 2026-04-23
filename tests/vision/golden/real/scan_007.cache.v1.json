@@ -1,0 +1,25 @@
+{
+  "parsed": {
+    "patient": {
+      "age": 32,
+      "sex": "male"
+    },
+    "lab_name": "AIG Hospitals, Gachibowli",
+    "collected_at": null,
+    "parameters": [
+      {
+        "name": "CREATININE",
+        "value": 1.04,
+        "unit": "mg/dL",
+        "reference_low": 0.67,
+        "reference_high": 1.17,
+        "source": "from_sheet",
+        "confidence": "high"
+      }
+    ],
+    "confidence": "high",
+    "notes": "Indian lab report (AIG Hospitals, Hyderabad), not Polish. Only one parameter reported: Serum Creatinine. Collection date was redacted in the image."
+  },
+  "latency_ms": 7145,
+  "cost_estimate_usd": 0.100875
+}

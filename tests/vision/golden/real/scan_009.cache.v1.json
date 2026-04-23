@@ -1,0 +1,115 @@
+{
+  "parsed": {
+    "patient": {
+      "age": null,
+      "sex": null
+    },
+    "lab_name": "Diagnostic Point Pathology Labs",
+    "collected_at": null,
+    "parameters": [
+      {
+        "name": "BILIRUBIN_TOTAL",
+        "value": 9.42,
+        "unit": "mg/dL",
+        "reference_low": 0.3,
+        "reference_high": 1.2,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "BILIRUBIN_DIRECT",
+        "value": 7.79,
+        "unit": "mg/dL",
+        "reference_low": 0.0,
+        "reference_high": 0.3,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "BILIRUBIN_INDIRECT",
+        "value": 1.63,
+        "unit": "mg/dL",
+        "reference_low": 0.0,
+        "reference_high": 0.7,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "AST",
+        "value": 162,
+        "unit": "IU/L",
+        "reference_low": 0.0,
+        "reference_high": 46.0,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "ALT",
+        "value": 86,
+        "unit": "IU/L",
+        "reference_low": 0.0,
+        "reference_high": 49.0,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "ALP",
+        "value": 396,
+        "unit": "U/L",
+        "reference_low": 42.0,
+        "reference_high": 128.0,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "TOTAL_PROTEIN",
+        "value": 6.2,
+        "unit": "g/dL",
+        "reference_low": 6.2,
+        "reference_high": 8.0,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "ALBUMIN",
+        "value": 3.7,
+        "unit": "g/dL",
+        "reference_low": 3.8,
+        "reference_high": 5.4,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "GLOBULIN",
+        "value": 2.5,
+        "unit": "g/dL",
+        "reference_low": 1.5,
+        "reference_high": 3.6,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "A_G_RATIO",
+        "value": 1.48,
+        "unit": null,
+        "reference_low": 1.0,
+        "reference_high": 2.0,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "GGT",
+        "value": 263,
+        "unit": "IU/L",
+        "reference_low": 11.0,
+        "reference_high": 50.0,
+        "source": "from_sheet",
+        "confidence": "high"
+      }
+    ],
+    "confidence": "high",
+    "notes": "Report is from an Indian lab (Diagnostic Point Pathology Labs, Delhi / Sarvodaya Hospital, Ghaziabad), not Polish. Patient demographic details were redacted in the image. Collection date not visible."
+  },
+  "latency_ms": 14240,
+  "cost_estimate_usd": 0.16995
+}

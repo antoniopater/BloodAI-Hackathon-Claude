@@ -8,7 +8,7 @@
   "ground_truth_values": {
     "HGB": 11.6,
     "WBC": 9.2,
-    "PLT": 390.0,
+    "PLT": 398.0,
     "MCV": 88.6
   },
   "ground_truth_units": {
@@ -25,5 +25,5 @@
   },
   "ground_truth_collected_at": "2025-04-22",
   "phi_status": "image_redacted",
-  "notes": "CBC with differential. HGB=11.6 low. PLT=390000 cells/cumm normalised to K/uL. MCH=22.7 pg low, MCHC=25.7 low — hypochromic microcytic pattern. Neutrophils=66%, Lymphocytes=24%. Shree Diagnostic page 13."
+  "notes": "CBC with differential. HGB=11.6 low. PLT=398000 cells/cumm normalised to K/uL (corrected from OCR vs manual read). MCH=22.7 pg low, MCHC=25.7 low — hypochromic microcytic pattern. Neutrophils=66%, Lymphocytes=24%. Shree Diagnostic page 13."
 }

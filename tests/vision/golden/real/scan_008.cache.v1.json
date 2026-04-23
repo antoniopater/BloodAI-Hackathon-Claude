@@ -1,0 +1,97 @@
+{
+  "parsed": {
+    "patient": {
+      "age": null,
+      "sex": null
+    },
+    "lab_name": "Dr. (Capt) Atul Kapila (Retd.) MD Path",
+    "collected_at": "2025-04-23",
+    "parameters": [
+      {
+        "name": "BILIRUBIN_TOTAL",
+        "value": 8.21,
+        "unit": "mg/dl",
+        "reference_low": 0.3,
+        "reference_high": 1.2,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "BILIRUBIN_DIRECT",
+        "value": 7.48,
+        "unit": "mg/dl",
+        "reference_low": 0.0,
+        "reference_high": 0.3,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "AST",
+        "value": 113,
+        "unit": "IU/L",
+        "reference_low": 0.0,
+        "reference_high": 46.0,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "ALT",
+        "value": 89,
+        "unit": "IU/L",
+        "reference_low": 0.0,
+        "reference_high": 49.0,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "ALP",
+        "value": 438,
+        "unit": "U/L",
+        "reference_low": 42.0,
+        "reference_high": 128.0,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "TOTAL_PROTEIN",
+        "value": 5.0,
+        "unit": "g/dL",
+        "reference_low": 6.2,
+        "reference_high": 8.0,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "ALBUMIN",
+        "value": 3.2,
+        "unit": "g/dL",
+        "reference_low": 3.8,
+        "reference_high": 5.4,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "GLOBULIN",
+        "value": 1.8,
+        "unit": "g/dL",
+        "reference_low": 1.5,
+        "reference_high": 3.6,
+        "source": "from_sheet",
+        "confidence": "medium"
+      },
+      {
+        "name": "A/G_RATIO",
+        "value": 1.78,
+        "unit": "",
+        "reference_low": 1.0,
+        "reference_high": 2.0,
+        "source": "from_sheet",
+        "confidence": "high"
+      }
+    ],
+    "confidence": "high",
+    "notes": "Unconjugated bilirubin value not printed. Gamma-GT value unreadable (only 'H' flag shown), omitted. Report appears to be from an Indian laboratory (Ghaziabad, U.P.), not Polish."
+  },
+  "latency_ms": 13872,
+  "cost_estimate_usd": 0.15735
+}

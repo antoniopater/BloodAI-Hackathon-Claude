@@ -1,0 +1,160 @@
+{
+  "parsed": {
+    "patient": {
+      "age": null,
+      "sex": "male"
+    },
+    "lab_name": "Shree Diagnostic Clinical Laboratory",
+    "collected_at": "2025-04-27",
+    "parameters": [
+      {
+        "name": "HGB",
+        "value": 11.6,
+        "unit": "g/dL",
+        "reference_low": 13.0,
+        "reference_high": 17.0,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "HCT",
+        "value": 45.2,
+        "unit": "%",
+        "reference_low": 40,
+        "reference_high": 50,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "RBC",
+        "value": 5.1,
+        "unit": "mill/cmm",
+        "reference_low": 4.5,
+        "reference_high": 5.5,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "MCV",
+        "value": 88.6,
+        "unit": "fL",
+        "reference_low": 83,
+        "reference_high": 101,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "MCH",
+        "value": 22.7,
+        "unit": "pg",
+        "reference_low": 27,
+        "reference_high": 33,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "MCHC",
+        "value": 25.7,
+        "unit": "%",
+        "reference_low": 32,
+        "reference_high": 38,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "WBC",
+        "value": 9200,
+        "unit": "cells/cumm",
+        "reference_low": 4000,
+        "reference_high": 11000,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "NEUT_PERCENT",
+        "value": 66,
+        "unit": "%",
+        "reference_low": 50,
+        "reference_high": 70,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "LYMPH_PERCENT",
+        "value": 24,
+        "unit": "%",
+        "reference_low": 20,
+        "reference_high": 40,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "EOS_PERCENT",
+        "value": 4,
+        "unit": "%",
+        "reference_low": 1,
+        "reference_high": 6,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "MONO_PERCENT",
+        "value": 6,
+        "unit": "%",
+        "reference_low": 0,
+        "reference_high": 10,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "NEUT_ABS",
+        "value": 6072,
+        "unit": "/cumm",
+        "reference_low": 2000,
+        "reference_high": 7000,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "LYMPH_ABS",
+        "value": 2208,
+        "unit": "/cumm",
+        "reference_low": 1000,
+        "reference_high": 3000,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "MONO_ABS",
+        "value": 552,
+        "unit": "/cumm",
+        "reference_low": 200,
+        "reference_high": 1000,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "EOS_ABS",
+        "value": 368,
+        "unit": "/cumm",
+        "reference_low": 20,
+        "reference_high": 500,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "PLT",
+        "value": 398000,
+        "unit": "cells/cumm",
+        "reference_low": null,
+        "reference_high": null,
+        "source": "from_sheet",
+        "confidence": "high"
+      }
+    ],
+    "confidence": "high",
+    "notes": "Report is from an Indian laboratory (Shree Diagnostic), not Polish. Platelet reference range was obscured on the sheet. Collection date inferred from report print time (27-Apr-2025)."
+  },
+  "latency_ms": 17263,
+  "cost_estimate_usd": 0.176775
+}

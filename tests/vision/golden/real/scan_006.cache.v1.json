@@ -1,0 +1,70 @@
+{
+  "parsed": {
+    "patient": {
+      "age": null,
+      "sex": null
+    },
+    "lab_name": "AIG Hospitals, Gachibowli",
+    "collected_at": null,
+    "parameters": [
+      {
+        "name": "ABSOLUTE EOSINOPHIL COUNT",
+        "value": 36,
+        "unit": "cells/cumm",
+        "reference_low": 20,
+        "reference_high": 500,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "ABSOLUTE MONOCYTE COUNT",
+        "value": 436,
+        "unit": "cells/cumm",
+        "reference_low": 200,
+        "reference_high": 1000,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "ABSOLUTE BASOPHIL COUNT",
+        "value": 9,
+        "unit": "cells/cumm",
+        "reference_low": 20,
+        "reference_high": 100,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "NEUTROPHIL LYMPHOCYTE RATIO",
+        "value": 15.9,
+        "unit": null,
+        "reference_low": null,
+        "reference_high": null,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "PLT",
+        "value": 233,
+        "unit": "10^3/mm^3",
+        "reference_low": 150,
+        "reference_high": 410,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "MPV",
+        "value": 10.0,
+        "unit": "fL",
+        "reference_low": 7.4,
+        "reference_high": 10.4,
+        "source": "from_sheet",
+        "confidence": "high"
+      }
+    ],
+    "confidence": "high",
+    "notes": "Report is from AIG Hospitals (India), not a Polish laboratory. Partial CBC page shown — only differential absolute counts, NLR, PLT, and MPV visible; peripheral smear findings are qualitative (RBC: Normocytic Normochromic; WBC: Neutrophilia; Platelets: Adequate; Abnormal cells: Nil; Hemoparasites: Nil). Patient demographics and dates were redacted."
+  },
+  "latency_ms": 12447,
+  "cost_estimate_usd": 0.1428
+}

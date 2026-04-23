@@ -1,0 +1,114 @@
+{
+  "parsed": {
+    "patient": {
+      "age": null,
+      "sex": null
+    },
+    "lab_name": null,
+    "collected_at": null,
+    "parameters": [
+      {
+        "name": "PLT",
+        "value": 125000,
+        "unit": "/cumm",
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "PDW",
+        "value": 10.9,
+        "unit": "fL",
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "MPV",
+        "value": 10.6,
+        "unit": "fL",
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "P-LCR",
+        "value": 30.0,
+        "unit": "%",
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "PCT",
+        "value": 0.13,
+        "unit": "%",
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "HGB",
+        "value": 11.0,
+        "unit": "g/dL",
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "RBC",
+        "value": 4.83,
+        "unit": "mil/cumm",
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "PCV",
+        "value": 35.3,
+        "unit": "%",
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "MCV",
+        "value": 73.08,
+        "unit": "fL",
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "MCH",
+        "value": 22.77,
+        "unit": "pg",
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "MCHC",
+        "value": 31.16,
+        "unit": "g/dL",
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "RDW-SD",
+        "value": 44.9,
+        "unit": "fL",
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "RDW-CV",
+        "value": 16.9,
+        "unit": "%",
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "WBC",
+        "value": 6220,
+        "unit": "/cumm",
+        "source": "from_sheet",
+        "confidence": "high"
+      }
+    ],
+    "confidence": "medium",
+    "notes": "Report appears to be from an Indian lab (not Polish), with three columns of values across different dates. Only the first column values were extracted. No reference ranges, patient age/sex, lab name, or collection date were visible on this page. Peripheral smear findings and notes were not extracted as they are qualitative."
+  },
+  "latency_ms": 12147,
+  "cost_estimate_usd": 0.145125
+}

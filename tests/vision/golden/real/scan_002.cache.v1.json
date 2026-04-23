@@ -1,0 +1,205 @@
+{
+  "parsed": {
+    "patient": {
+      "age": null,
+      "sex": null
+    },
+    "lab_name": "Shree Diagnostic Centre",
+    "collected_at": null,
+    "parameters": [
+      {
+        "name": "HGB",
+        "value": 9.1,
+        "unit": "gm/dl",
+        "reference_low": 13.0,
+        "reference_high": 17.0,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "RBC",
+        "value": 3.19,
+        "unit": "mill/cmm",
+        "reference_low": 4.5,
+        "reference_high": 5.5,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "HCT",
+        "value": 27.2,
+        "unit": "%",
+        "reference_low": 40.0,
+        "reference_high": 50.0,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "MCV",
+        "value": 85.3,
+        "unit": "fl",
+        "reference_low": 83.0,
+        "reference_high": 95.0,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "MCH",
+        "value": 28.5,
+        "unit": "pg",
+        "reference_low": 27.0,
+        "reference_high": 32.0,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "MCHC",
+        "value": 33.5,
+        "unit": "g/dl",
+        "reference_low": 31.5,
+        "reference_high": 34.5,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "RDW-CV",
+        "value": 16.5,
+        "unit": "%",
+        "reference_low": 11.6,
+        "reference_high": 14.6,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "WBC",
+        "value": 10560,
+        "unit": "/uL",
+        "reference_low": 4000,
+        "reference_high": 10000,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "NEUT_PERCENT",
+        "value": 87.7,
+        "unit": "%",
+        "reference_low": 40,
+        "reference_high": 70,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "LYMPH_PERCENT",
+        "value": 5.9,
+        "unit": "%",
+        "reference_low": 20,
+        "reference_high": 40,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "EOS_PERCENT",
+        "value": 0.7,
+        "unit": "%",
+        "reference_low": 1,
+        "reference_high": 6,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "MONO_PERCENT",
+        "value": 5.5,
+        "unit": "%",
+        "reference_low": 2,
+        "reference_high": 10,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "BASO_PERCENT",
+        "value": 0.2,
+        "unit": "%",
+        "reference_low": 0,
+        "reference_high": 1,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "PLT",
+        "value": 370,
+        "unit": "/uL",
+        "reference_low": 150,
+        "reference_high": 450,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "MPV",
+        "value": 9.4,
+        "unit": "fL",
+        "reference_low": 6.78,
+        "reference_high": 13.46,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "IPF",
+        "value": 2.9,
+        "unit": "%",
+        "reference_low": 0,
+        "reference_high": 5,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "NEUT_ABS",
+        "value": 9261.12,
+        "unit": "/uL",
+        "reference_low": 1575,
+        "reference_high": 8800,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "LYMPH_ABS",
+        "value": 623.04,
+        "unit": "/uL",
+        "reference_low": 1125,
+        "reference_high": 4950,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "EOS_ABS",
+        "value": 73.92,
+        "unit": "/uL",
+        "reference_low": 0,
+        "reference_high": 400,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "MONO_ABS",
+        "value": 580.8,
+        "unit": "/uL",
+        "reference_low": 0,
+        "reference_high": 1000,
+        "source": "from_sheet",
+        "confidence": "high"
+      },
+      {
+        "name": "BASO_ABS",
+        "value": 21.12,
+        "unit": "/uL",
+        "reference_low": 0,
+        "reference_high": 100,
+        "source": "from_sheet",
+        "confidence": "high"
+      }
+    ],
+    "confidence": "high",
+    "notes": "Report is from Shree Diagnostic Centre (India), not a Polish lab. Collection date was redacted in the image. Patient demographics were redacted."
+  },
+  "latency_ms": 18587,
+  "cost_estimate_usd": 0.201825
+}
