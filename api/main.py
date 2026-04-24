@@ -16,7 +16,8 @@ from typing import Optional, Dict, List
 
 import torch
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from model.tokenizer import load_tokenizer
@@ -34,9 +35,26 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="BloodAI Triage API", version="1.0")
 
+_static_dir = Path(__file__).parent / "static"
+app.mount("/static", StaticFiles(directory=_static_dir), name="static")
+
+
+@app.get("/")
+async def root():
+    return FileResponse(_static_dir / "index.html")
+
+
 # Mount the Vision OCR endpoint (POST /scan).
 from api.scan import scan_router  # noqa: E402
+from api.predict_real import router as predict_real_router  # noqa: E402
+from api.explain_mock import router as explain_mock_router  # noqa: E402
+from api.nfz import router as nfz_router  # noqa: E402
+from api.doctors import router as doctors_router  # noqa: E402
 app.include_router(scan_router)
+app.include_router(predict_real_router)
+app.include_router(explain_mock_router)
+app.include_router(nfz_router)
+app.include_router(doctors_router)
 
 MODEL_PATH = None
 TOKENIZER = None
@@ -74,13 +92,20 @@ class PredictResponse(BaseModel):
 
 @app.on_event("startup")
 async def startup():
-    """Load model on startup (lazy loading)."""
+    """Load model and supporting data on startup."""
     global TOKENIZER, MODEL, LAB_NORMS, QUESTIONS_BANK, MODEL_PATH
 
     config_dir = Path(__file__).parent.parent / "config"
     data_dir = Path(__file__).parent.parent / "data"
     LAB_NORMS = load_lab_norms(config_dir / "lab_norms.json")
     QUESTIONS_BANK = load_questions_bank(data_dir / "questions.json")
+
+    from api.predict_real import initialize as init_bert
+    model_path = Path(__file__).parent.parent / "checkpoints" / "finetune"
+    if model_path.exists():
+        init_bert(model_path)
+    else:
+        logger.warning(f"Model not found at {model_path} — /predict will return 503")
 
     logger.info("BloodAI API ready")
 
@@ -107,106 +132,58 @@ def load_model(model_path: Path):
     logger.info("Model loaded")
 
 
-@app.post("/predict", response_model=PredictResponse)
-async def predict(request: PredictRequest, model_path: Optional[Path] = None):
-    """
-    Predict triage from lab values.
-
-    Args:
-        request: patient demographics and lab values
-        model_path: optional override for model checkpoint
-
-    Returns:
-        triage flags, probabilities per class, and attention weights
-    """
-    global TOKENIZER, MODEL
-
-    if not MODEL:
-        if model_path is None:
-            model_path = Path("checkpoints/finetune/")
-        if not model_path.exists():
-            raise HTTPException(status_code=400, detail=f"Model not found at {model_path}")
-        load_model(model_path)
-
-    lab_values = {
-        "HGB": request.hgb,
-        "HCT": request.hct,
-        "PLT": request.plt,
-        "MCV": request.mcv,
-        "WBC": request.wbc,
-        "CREATININE": request.creatinine,
-        "ALT": request.alt,
-        "AST": request.ast,
-        "UREA": request.urea,
-    }
-
-    tokens = [f"AGE_{request.age}", f"SEX_{request.sex}"]
-
-    for test_name, value in lab_values.items():
-        if value is not None and value >= 0:
-            token = get_lab_token_v2(test_name, value, request.age, request.sex, LAB_NORMS)
-            tokens.append(token)
-
-    triggers = extract_triggers(tokens)
-    for trigger in triggers[:3]:
-        tokens.append(f"TRIGGER_{trigger}")
-
-    sequence_str = " ".join(tokens)
-
-    encoding = TOKENIZER(
-        sequence_str,
-        max_length=128,
-        padding="max_length",
-        truncation=True,
-        return_tensors="pt",
-    )
-
-    input_ids = encoding["input_ids"].to(DEVICE)
-    attention_mask = encoding["attention_mask"].to(DEVICE)
-
-    with torch.no_grad():
-        outputs = MODEL(
-            input_ids=input_ids,
-            attention_mask=attention_mask,
-            output_attentions=True,
-        )
-
-    logits = outputs.logits
-    probs = torch.sigmoid(logits).cpu().numpy()[0]
-
-    flags = []
-    probabilities = {}
-
-    for class_idx, class_name in REVERSE_LABEL_MAP.items():
-        prob = float(probs[class_idx])
-        probabilities[class_name] = prob
-        thr = CLASS_THRESHOLDS.get(class_name, 0.5)
-        if prob > thr and class_name != "POZ":
-            flags.append(class_name)
-
-    # SOR takes precedence — if flagged, suppress other specialists
-    if "SOR" in flags:
-        flags = ["SOR"]
-    elif not flags:
-        flags = ["POZ"]
-
-    attention_data = None
-    if hasattr(outputs, "attentions") and outputs.attentions:
-        last_layer_attention = outputs.attentions[-1][0]
-        cls_attention = last_layer_attention[0].mean(dim=0).cpu().numpy()
-
-        token_list = TOKENIZER.convert_ids_to_tokens(input_ids[0])
-        attention_data = {
-            token: float(att) for token, att in zip(token_list, cls_attention)
-            if token not in ["[PAD]", "[CLS]", "[SEP]"]
-        }
-
-    return PredictResponse(
-        flags=flags,
-        probabilities=probabilities,
-        attention=attention_data,
-        tokens=tokens,
-    )
+# Real /predict (BERT inference) — disabled while model is training.
+# Swap back in when checkpoints/finetune/ is ready and replace predict_mock_router above.
+# @app.post("/predict", response_model=PredictResponse)
+# async def predict(request: PredictRequest, model_path: Optional[Path] = None):
+#     global TOKENIZER, MODEL
+#     if not MODEL:
+#         if model_path is None:
+#             model_path = Path("checkpoints/finetune/")
+#         if not model_path.exists():
+#             raise HTTPException(status_code=400, detail=f"Model not found at {model_path}")
+#         load_model(model_path)
+#     lab_values = {"HGB": request.hgb, "HCT": request.hct, "PLT": request.plt,
+#                   "MCV": request.mcv, "WBC": request.wbc, "CREATININE": request.creatinine,
+#                   "ALT": request.alt, "AST": request.ast, "UREA": request.urea}
+#     tokens = [f"AGE_{request.age}", f"SEX_{request.sex}"]
+#     for test_name, value in lab_values.items():
+#         if value is not None and value >= 0:
+#             token = get_lab_token_v2(test_name, value, request.age, request.sex, LAB_NORMS)
+#             tokens.append(token)
+#     triggers = extract_triggers(tokens)
+#     for trigger in triggers[:3]:
+#         tokens.append(f"TRIGGER_{trigger}")
+#     sequence_str = " ".join(tokens)
+#     encoding = TOKENIZER(sequence_str, max_length=128, padding="max_length",
+#                          truncation=True, return_tensors="pt")
+#     input_ids = encoding["input_ids"].to(DEVICE)
+#     attention_mask = encoding["attention_mask"].to(DEVICE)
+#     with torch.no_grad():
+#         outputs = MODEL(input_ids=input_ids, attention_mask=attention_mask, output_attentions=True)
+#     logits = outputs.logits
+#     probs = torch.sigmoid(logits).cpu().numpy()[0]
+#     flags = []
+#     probabilities = {}
+#     for class_idx, class_name in REVERSE_LABEL_MAP.items():
+#         prob = float(probs[class_idx])
+#         probabilities[class_name] = prob
+#         thr = CLASS_THRESHOLDS.get(class_name, 0.5)
+#         if prob > thr and class_name != "POZ":
+#             flags.append(class_name)
+#     if "SOR" in flags:
+#         flags = ["SOR"]
+#     elif not flags:
+#         flags = ["POZ"]
+#     attention_data = None
+#     if hasattr(outputs, "attentions") and outputs.attentions:
+#         last_layer_attention = outputs.attentions[-1][0]
+#         cls_attention = last_layer_attention[0].mean(dim=0).cpu().numpy()
+#         token_list = TOKENIZER.convert_ids_to_tokens(input_ids[0])
+#         attention_data = {token: float(att) for token, att in zip(token_list, cls_attention)
+#                           if token not in ["[PAD]", "[CLS]", "[SEP]"]}
+#     return PredictResponse(flags=flags, probabilities=probabilities,
+#                            attention=attention_data, tokens=tokens)
 
 
 @app.get("/lab_norms")

@@ -213,6 +213,7 @@ def main():
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--lr", type=float, default=2e-5)
     parser.add_argument("--focal-gamma", type=float, default=2.0, help="Focal loss exponent")
+    parser.add_argument("--resume", type=str, default=None, help="Resume from checkpoint dir")
 
     args = parser.parse_args()
     args.output = Path(args.output)
@@ -233,7 +234,6 @@ def main():
     logger.info(f"Loading model from {args.pretrained}")
     model = BertForMultiLabelClassification.from_pretrained(
         args.pretrained,
-        output_attentions=True,
     )
 
     cost_weights_tensor = torch.tensor(
@@ -246,21 +246,19 @@ def main():
         overwrite_output_dir=True,
         num_train_epochs=args.epochs,
         per_device_train_batch_size=args.batch_size,
-        per_device_eval_batch_size=16,
+        per_device_eval_batch_size=32,
         learning_rate=args.lr,
         weight_decay=0.01,
         warmup_steps=300,
-        save_total_limit=2,
-        save_strategy="epoch",
-        evaluation_strategy="epoch",
-        eval_accumulation_steps=32,
+        save_total_limit=6,
+        save_strategy="steps",
+        save_steps=6000,
+        evaluation_strategy="no",
         logging_steps=50,
         logging_dir=str(args.output / "logs"),
         report_to="none",
         seed=42,
-        load_best_model_at_end=True,
-        metric_for_best_model="macro_roc_auc",
-        greater_is_better=True,
+        load_best_model_at_end=False,
         dataloader_pin_memory=False,
         dataloader_num_workers=0,
     )
@@ -273,11 +271,19 @@ def main():
         train_dataset=train_dataset,
         eval_dataset=val_dataset,
         compute_metrics=compute_metrics,
-        callbacks=[EarlyStoppingCallback(early_stopping_patience=2)],
+        callbacks=[],
     )
 
+    resume = args.resume
+    if resume is None:
+        # auto-detect last checkpoint
+        ckpts = sorted(args.output.glob("checkpoint-*"), key=lambda p: int(p.name.split("-")[1]))
+        if ckpts:
+            resume = str(ckpts[-1])
+            logger.info(f"Auto-resuming from {resume}")
+
     logger.info("Starting fine-tuning")
-    trainer.train()
+    trainer.train(resume_from_checkpoint=resume)
 
     logger.info(f"Saving model to {args.output}")
     model.save_pretrained(args.output)

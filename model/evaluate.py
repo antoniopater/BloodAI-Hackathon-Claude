@@ -16,7 +16,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
-from sklearn.metrics import roc_auc_score, roc_curve, confusion_matrix, f1_score
+from sklearn.metrics import roc_auc_score, roc_curve, confusion_matrix, f1_score, average_precision_score
 import matplotlib.pyplot as plt
 
 from model.bert_model import BertForMultiLabelClassification, LABEL_MAP, REVERSE_LABEL_MAP
@@ -300,32 +300,22 @@ def main():
     all_labels = np.array(all_labels)
     logger.info(f"Loaded {len(all_inputs)} examples")
 
-    logger.info("Generating predictions")
+    logger.info("Generating predictions (batched)")
+    eval_ds = _EvalDataset(all_inputs, all_labels, tokenizer)
+    eval_loader = DataLoader(eval_ds, batch_size=64, shuffle=False)
+
     all_probs = []
-
     with torch.no_grad():
-        for i, text in enumerate(all_inputs):
-            if (i + 1) % 1000 == 0:
-                logger.info(f"Processed {i + 1}/{len(all_inputs)}")
-
-            encoding = tokenizer(
-                text,
-                max_length=128,
-                padding="max_length",
-                truncation=True,
-                return_tensors="pt",
-            )
-
-            input_ids = encoding["input_ids"].to(device)
-            attention_mask = encoding["attention_mask"].to(device)
-
+        for i, batch in enumerate(eval_loader):
+            if (i + 1) % 20 == 0:
+                logger.info(f"Processed {min((i+1)*64, len(all_inputs))}/{len(all_inputs)}")
+            input_ids = batch["input_ids"].to(device)
+            attention_mask = batch["attention_mask"].to(device)
             outputs = model(input_ids=input_ids, attention_mask=attention_mask)
-            logits = outputs.logits
-            probs = torch.sigmoid(logits).cpu().numpy()
+            probs = torch.sigmoid(outputs.logits).cpu().numpy()
+            all_probs.append(probs)
 
-            all_probs.append(probs[0])
-
-    all_probs = np.array(all_probs)
+    all_probs = np.vstack(all_probs)
 
     logger.info("=" * 60)
     logger.info("EVALUATION RESULTS")
@@ -337,10 +327,12 @@ def main():
         class_targets = all_labels[:, class_idx]
 
         auc = roc_auc_score(class_targets, class_probs)
+        pr_auc = average_precision_score(class_targets, class_probs)
+        prevalence = class_targets.mean()
         pred_binary = (class_probs > 0.5).astype(int)
         f1 = f1_score(class_targets, pred_binary, zero_division=0)
 
-        logger.info(f"{class_name:12} | AUC: {auc:.3f} | F1@0.5: {f1:.3f}")
+        logger.info(f"{class_name:12} | ROC AUC: {auc:.3f} | PR AUC: {pr_auc:.3f} | prevalence: {prevalence:.3f} | F1@0.5: {f1:.3f}")
 
     ece = compute_ece(all_probs, all_labels)
     logger.info(f"{'ECE':12} | {ece:.4f} (target < 0.012)")
@@ -381,9 +373,10 @@ def main():
         thr = calibrated_thresholds[class_name]
 
         auc = roc_auc_score(class_targets, class_probs)
+        pr_auc = average_precision_score(class_targets, class_probs)
         pred_binary = (class_probs > thr).astype(int)
         f1 = f1_score(class_targets, pred_binary, zero_division=0)
-        logger.info(f"{class_name:12} | AUC: {auc:.3f} | F1@{thr:.2f}: {f1:.3f}")
+        logger.info(f"{class_name:12} | ROC AUC: {auc:.3f} | PR AUC: {pr_auc:.3f} | F1@{thr:.2f}: {f1:.3f}")
     logger.info("=" * 60)
 
 
