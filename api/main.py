@@ -47,12 +47,12 @@ async def root():
 # Mount the Vision OCR endpoint (POST /scan).
 from api.scan import scan_router  # noqa: E402
 from api.predict_real import router as predict_real_router  # noqa: E402
-from api.explain_mock import router as explain_mock_router  # noqa: E402
+from api.explain_real import router as explain_real_router  # noqa: E402
 from api.nfz import router as nfz_router  # noqa: E402
 from api.doctors import router as doctors_router  # noqa: E402
 app.include_router(scan_router)
 app.include_router(predict_real_router)
-app.include_router(explain_mock_router)
+app.include_router(explain_real_router)
 app.include_router(nfz_router)
 app.include_router(doctors_router)
 
