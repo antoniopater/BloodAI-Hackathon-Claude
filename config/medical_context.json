@@ -1,0 +1,60 @@
+{
+  "critical_thresholds": {
+    "HGB":        {"critical_low": 7.0,  "critical_high": 20.0},
+    "PLT":        {"critical_low": 20.0, "critical_high": 1000.0},
+    "WBC":        {"critical_low": 2.0,  "critical_high": 30.0},
+    "CREATININE": {"critical_low": null, "critical_high": 4.0},
+    "ALT":        {"critical_low": null, "critical_high": 500.0},
+    "AST":        {"critical_low": null, "critical_high": 500.0}
+  },
+
+  "comorbidity_patterns": {
+    "HGB_low_CREATININE_high": {
+      "label":    "Anemia of Chronic Kidney Disease",
+      "urgency":  "HIGH",
+      "specialties": ["Nephrology", "Hematology"],
+      "note":     "Low HGB + elevated creatinine — classic CKD-anaemia. Both risks compound."
+    },
+    "WBC_high_PLT_low": {
+      "label":    "Possible haematological malignancy or DIC",
+      "urgency":  "CRITICAL",
+      "specialties": ["Hematology", "ER"],
+      "note":     "Leukocytosis with thrombocytopenia — differential includes leukaemia and DIC."
+    },
+    "HGB_low_PLT_low": {
+      "label":    "Possible bone-marrow disorder, ITP or DIC",
+      "urgency":  "CRITICAL",
+      "specialties": ["Hematology"],
+      "note":     "Pancytopenia pattern — requires urgent haematology workup."
+    },
+    "WBC_high_ALT_high": {
+      "label":    "Systemic infection or acute hepatitis",
+      "urgency":  "HIGH",
+      "specialties": ["Hepatology"],
+      "note":     "Leukocytosis + hepatocellular injury — consider viral hepatitis, sepsis."
+    },
+    "CREATININE_high_UREA_high": {
+      "label":    "Advanced renal impairment",
+      "urgency":  "HIGH",
+      "specialties": ["Nephrology"],
+      "note":     "Both markers elevated — consider AKI on CKD. Check GFR and electrolytes."
+    }
+  },
+
+  "creatinine_ckd_staging": {
+    "female": [
+      {"max": 1.1, "stage": null},
+      {"max": 1.4, "stage": "CKD G2 — mild"},
+      {"max": 2.0, "stage": "CKD G3a — moderate"},
+      {"max": 3.5, "stage": "CKD G3b — moderate–severe"},
+      {"max": 999, "stage": "CKD G4+ — severe, prepare for renal replacement"}
+    ],
+    "male": [
+      {"max": 1.35, "stage": null},
+      {"max": 1.7,  "stage": "CKD G2 — mild"},
+      {"max": 2.5,  "stage": "CKD G3a — moderate"},
+      {"max": 4.0,  "stage": "CKD G3b — moderate–severe"},
+      {"max": 999,  "stage": "CKD G4+ — severe, prepare for renal replacement"}
+    ]
+  }
+}

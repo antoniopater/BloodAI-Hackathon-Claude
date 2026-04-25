@@ -6,6 +6,7 @@ import { useAppStore } from '../../store/useAppStore'
 
 export function HomeScreen() {
   const historyCount = useAppStore((s) => s.history.length)
+  const user = useAppStore((s) => s.user)
 
   return (
     <div className="space-y-10">
@@ -40,11 +41,15 @@ export function HomeScreen() {
               </Button>
             </Link>
           </div>
-          {historyCount > 0 && (
+          {user && historyCount > 0 && (
             <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">
               You have {historyCount} saved result{historyCount === 1 ? '' : 's'}.{' '}
+              <Link to="/history" className="font-semibold text-primary-800 hover:underline dark:text-primary-100">
+                View history →
+              </Link>
+              {' · '}
               <Link to="/trends" className="font-semibold text-primary-800 hover:underline dark:text-primary-100">
-                See your trends →
+                See trends →
               </Link>
             </p>
           )}

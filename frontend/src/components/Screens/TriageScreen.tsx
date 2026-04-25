@@ -207,12 +207,12 @@ export function TriageScreen() {
             {topPrediction && (
               <div className="text-center">
                 <div className="text-5xl" aria-hidden="true">
-                  {TRIAGE_LABELS[topPrediction.class].emoji}
+                  {TRIAGE_LABELS[topPrediction.class]?.emoji ?? '🔬'}
                 </div>
                 <p className="mt-2 text-xl font-bold text-slate-900 dark:text-slate-50">
                   {mode === 'patient'
-                    ? TRIAGE_LABELS[topPrediction.class].patient
-                    : TRIAGE_LABELS[topPrediction.class].en}
+                    ? (TRIAGE_LABELS[topPrediction.class]?.patient ?? topPrediction.class)
+                    : (TRIAGE_LABELS[topPrediction.class]?.en ?? topPrediction.class)}
                 </p>
                 <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
                   {formatPct(topPrediction.probability)} likelihood

@@ -1,5 +1,6 @@
-import { Link, NavLink } from 'react-router-dom'
-import { Activity, Moon, Sun, Monitor, LineChart, Home } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { Activity, Moon, Sun, Monitor, LineChart, Home, User, ClipboardList, LogOut } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
 import { cn } from '../../utils/cn'
 
@@ -23,6 +24,69 @@ function ThemeToggle() {
     >
       {icon}
     </button>
+  )
+}
+
+function UserMenu() {
+  const navigate = useNavigate()
+  const user = useAppStore((s) => s.user)
+  const logout = useAppStore((s) => s.logout)
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  if (!user) {
+    return (
+      <Link
+        to="/login"
+        className="inline-flex items-center gap-1.5 rounded-xl border border-primary-700 px-3 py-2 text-sm font-semibold text-primary-700 hover:bg-primary-50 dark:border-primary-400 dark:text-primary-300 dark:hover:bg-primary-900/20 min-h-[40px]"
+      >
+        <User className="h-4 w-4" aria-hidden="true" />
+        Login
+      </Link>
+    )
+  }
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700 min-h-[40px]"
+        aria-haspopup="true"
+        aria-expanded={open}
+      >
+        <User className="h-4 w-4" aria-hidden="true" />
+        <span className="hidden sm:block max-w-[120px] truncate">{user.name}</span>
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 w-44 rounded-xl border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800 z-50">
+          <button
+            type="button"
+            className="flex w-full items-center gap-2 rounded-t-xl px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
+            onClick={() => { setOpen(false); navigate('/history') }}
+          >
+            <ClipboardList className="h-4 w-4" aria-hidden="true" />
+            My History
+          </button>
+          <button
+            type="button"
+            className="flex w-full items-center gap-2 rounded-b-xl px-4 py-3 text-sm font-medium text-danger-700 hover:bg-danger-50 dark:text-red-400 dark:hover:bg-red-900/20"
+            onClick={() => { setOpen(false); logout() }}
+          >
+            <LogOut className="h-4 w-4" aria-hidden="true" />
+            Log out
+          </button>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -68,6 +132,7 @@ export function Header() {
             <LineChart className="h-4 w-4" /> Trends
           </NavLink>
           <ThemeToggle />
+          <UserMenu />
         </nav>
       </div>
     </header>

@@ -64,7 +64,8 @@ export function TriageResults({ predictions, mode, onSelect, selectedClass }: Tr
 
       <ul className="space-y-2" aria-label="Triage predictions">
         {sorted.map((p) => {
-          const meta = TRIAGE_LABELS[p.class]
+          const meta = TRIAGE_LABELS[p.class as keyof typeof TRIAGE_LABELS]
+          if (!meta) return null
           const tone = barTone(p.probability)
           const pct = Math.round(p.probability * 100)
           const selected = selectedClass === p.class

@@ -7,7 +7,10 @@ import { InputScreen } from './components/Screens/InputScreen'
 import { TriageScreen } from './components/Screens/TriageScreen'
 import { DoctorFinderScreen } from './components/Screens/DoctorFinderScreen'
 import { TrendsScreen } from './components/Screens/TrendsScreen'
+import { LoginScreen } from './components/Screens/LoginScreen'
+import { HistoryScreen } from './components/Screens/HistoryScreen'
 import { ToastHost } from './components/UI/Toast'
+import { ErrorBoundary } from './components/UI/ErrorBoundary'
 import { useAppStore } from './store/useAppStore'
 
 export default function App() {
@@ -33,6 +36,7 @@ export default function App() {
   return (
     <>
       <Layout>
+        <ErrorBoundary>
         <Routes>
           <Route path="/" element={<HomeScreen />} />
           <Route path="/scan" element={<ScanScreen />} />
@@ -40,8 +44,11 @@ export default function App() {
           <Route path="/triage" element={<TriageScreen />} />
           <Route path="/doctors" element={<DoctorFinderScreen />} />
           <Route path="/trends" element={<TrendsScreen />} />
+          <Route path="/login" element={<LoginScreen />} />
+          <Route path="/history" element={<HistoryScreen />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </ErrorBoundary>
       </Layout>
       <ToastHost />
     </>

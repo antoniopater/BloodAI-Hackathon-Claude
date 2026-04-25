@@ -52,6 +52,10 @@ interface AppState {
   setSelectedSpecialty: (c: TriageClass | null) => void
   setSelectedProvince: (code: string) => void
   setSelectedCity: (city: string) => void
+
+  user: { name: string; email: string } | null
+  login: (name: string, email: string) => void
+  logout: () => void
 }
 
 export const useAppStore = create<AppState>()(
@@ -106,6 +110,10 @@ export const useAppStore = create<AppState>()(
       setSelectedSpecialty: (c) => set({ selectedSpecialty: c }),
       setSelectedProvince: (code) => set({ selectedProvince: code }),
       setSelectedCity: (city) => set({ selectedCity: city }),
+
+      user: null,
+      login: (name, email) => set({ user: { name, email } }),
+      logout: () => set({ user: null }),
     }),
     {
       name: 'bloodai-store',
@@ -115,6 +123,7 @@ export const useAppStore = create<AppState>()(
         history: s.history,
         selectedProvince: s.selectedProvince,
         selectedCity: s.selectedCity,
+        user: s.user,
       }),
     },
   ),
