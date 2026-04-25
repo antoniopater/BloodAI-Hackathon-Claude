@@ -230,7 +230,8 @@ async def get_questions(param: str, age: Optional[int] = None):
 @app.get("/health")
 async def health():
     """Health check endpoint."""
-    return {"status": "ok", "model_loaded": MODEL is not None}
+    from api.predict_real import _MODEL as bert_model
+    return {"status": "ok", "model_loaded": bert_model is not None, "model": "bert-5ep-v1"}
 
 
 if __name__ == "__main__":
