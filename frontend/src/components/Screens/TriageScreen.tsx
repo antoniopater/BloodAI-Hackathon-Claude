@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowRight, Sparkles, Stethoscope, User } from 'lucide-react'
+import { ArrowRight, Sparkles, Stethoscope, User, FlaskConical } from 'lucide-react'
 import { ProgressStepper } from '../Layout/ProgressStepper'
 import { Card } from '../UI/Card'
 import { Button } from '../UI/Button'
@@ -197,6 +197,46 @@ export function TriageScreen() {
                     {q}
                   </li>
                 ))}
+              </ul>
+            </Card>
+          )}
+
+          {explanation?.suggestedTests && explanation.suggestedTests.length > 0 && (
+            <Card
+              padding="lg"
+              title={
+                <span className="inline-flex items-center gap-2">
+                  <FlaskConical className="h-5 w-5 text-primary-700 dark:text-primary-100" aria-hidden="true" />
+                  Suggested additional tests
+                </span>
+              }
+              description="Consider asking your doctor about these to clarify the findings."
+            >
+              <ul className="space-y-2">
+                {explanation.suggestedTests.map((t, i) => {
+                  const tone =
+                    t.urgency === 'urgent'
+                      ? 'danger'
+                      : t.urgency === 'soon'
+                      ? 'warning'
+                      : 'info'
+                  const urgencyLabel =
+                    t.urgency === 'urgent' ? 'Urgent' : t.urgency === 'soon' ? 'Soon' : 'Routine'
+                  return (
+                    <li
+                      key={i}
+                      className="rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-800"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="font-semibold text-slate-900 dark:text-slate-50">{t.name}</p>
+                        <Badge tone={tone}>{urgencyLabel}</Badge>
+                      </div>
+                      {t.reason && (
+                        <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{t.reason}</p>
+                      )}
+                    </li>
+                  )
+                })}
               </ul>
             </Card>
           )}

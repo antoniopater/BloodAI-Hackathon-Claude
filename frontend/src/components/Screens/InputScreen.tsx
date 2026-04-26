@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, FlaskConical, RotateCcw, Sparkles } from 'lucide-react'
+import { ArrowRight, CheckCircle2, FlaskConical, HelpCircle, RotateCcw, Sparkles, XCircle } from 'lucide-react'
 import { ProgressStepper } from '../Layout/ProgressStepper'
 import { Card } from '../UI/Card'
 import { Button } from '../UI/Button'
@@ -13,6 +13,8 @@ import { useAppStore } from '../../store/useAppStore'
 import { useBertTriage } from '../../hooks/useBertTriage'
 import { LAB_PARAMS } from '../../types/medical'
 import type { LabParam, PatientInput } from '../../types/medical'
+import type { AdaptiveQuestion } from '../../types/api'
+import { computeTriggers } from '../../services/bertClient'
 import { validatePatientInput, parseNumber } from '../../utils/validators'
 import { toast } from '../../store/useToastStore'
 
@@ -69,11 +71,17 @@ export function InputScreen() {
   const setTriage = useAppStore((s) => s.setTriage)
   const setExplanation = useAppStore((s) => s.setExplanation)
   const saveCurrentToHistory = useAppStore((s) => s.saveCurrentToHistory)
+  const setSymptomTokens = useAppStore((s) => s.setSymptomTokens)
   const user = useAppStore((s) => s.user)
 
   const { run: runTriage, loading: loadingTriage } = useBertTriage()
 
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [questions, setQuestions] = useState<AdaptiveQuestion[]>([])
+  const [answers, setAnswers] = useState<Record<string, boolean | null>>({})
+  const [loadingQuestions, setLoadingQuestions] = useState(false)
+  const [showQuestions, setShowQuestions] = useState(false)
+  const questionsRef = useRef<HTMLDivElement>(null)
 
   const hasValues = useMemo(
     () => Object.values(input.values).some((v) => v != null),
@@ -84,16 +92,25 @@ export function InputScreen() {
     setInput({ age: preset.data.age, sex: preset.data.sex as 'male' | 'female' })
     mergeLabValues(preset.data.values as Partial<Record<LabParam, number>>)
     setErrors({})
+    setQuestions([])
+    setAnswers({})
+    setShowQuestions(false)
   }
 
-  const handleAnalyze = async () => {
-    const errs = validatePatientInput(input)
-    setErrors(errs)
-    if (Object.keys(errs).length > 0) {
-      toast.error('Please fix the highlighted fields.', 'Some fields need attention')
-      return
-    }
-    const result = await runTriage(input)
+  function collectSymptomTokens(): string[] {
+    return questions
+      .map((q) => {
+        const answered = answers[q.intent]
+        if (answered === true) return q.token_yes
+        if (answered === false) return q.token_no
+        return null
+      })
+      .filter((t): t is string => t != null)
+  }
+
+  async function runFinalAnalysis(tokens: string[]) {
+    setSymptomTokens(tokens)
+    const result = await runTriage(input, tokens.length > 0 ? tokens : undefined)
     if (!result) {
       toast.error('We could not reach the triage service. Please try again.', 'Analysis failed')
       return
@@ -107,6 +124,43 @@ export function InputScreen() {
     }
     navigate('/triage')
   }
+
+  const handleAnalyze = async () => {
+    const errs = validatePatientInput(input)
+    setErrors(errs)
+    if (Object.keys(errs).length > 0) {
+      toast.error('Please fix the highlighted fields.', 'Some fields need attention')
+      return
+    }
+
+    if (showQuestions) {
+      await runFinalAnalysis(collectSymptomTokens())
+      return
+    }
+
+    // Phase 1: fetch adaptive questions based on flagged values
+    setLoadingQuestions(true)
+    try {
+      const result = await computeTriggers({ age: input.age, sex: input.sex, values: input.values })
+      if (result.questions.length > 0) {
+        setQuestions(result.questions)
+        setAnswers({})
+        setShowQuestions(true)
+        setTimeout(() => questionsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+        return
+      }
+    } catch {
+      // compute_triggers unavailable → proceed without questions
+    } finally {
+      setLoadingQuestions(false)
+    }
+
+    await runFinalAnalysis([])
+  }
+
+  const handleSkipQuestions = () => runFinalAnalysis([])
+
+  const isLoading = loadingTriage || loadingQuestions
 
   return (
     <div className="space-y-6">
@@ -201,41 +255,120 @@ export function InputScreen() {
               value={input.values[p]}
               onChange={(v) => setLabValue(p, v)}
               error={errors[`values.${p}`]}
+              age={input.age}
+              sex={input.sex}
             />
           ))}
         </div>
       </Card>
 
+      {/* Adaptive questions — shown after phase-1 trigger analysis */}
+      {showQuestions && questions.length > 0 && (
+        <div ref={questionsRef}>
+          <Card
+            padding="lg"
+            title="A few quick questions"
+            description="Your results flagged some values. These help the model give a more accurate referral."
+          >
+            <div className="space-y-4">
+              {questions.map((q, i) => {
+                const answered = answers[q.intent]
+                return (
+                  <div
+                    key={i}
+                    className="flex flex-col gap-2 rounded-xl border border-slate-200 p-4 dark:border-slate-700"
+                  >
+                    <p className="flex items-start gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
+                      <HelpCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary-500" aria-hidden="true" />
+                      {q.text}
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setAnswers((prev) => ({ ...prev, [q.intent]: true }))}
+                        className={`flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-semibold transition ${
+                          answered === true
+                            ? 'border-green-500 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                            : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-green-400 hover:bg-green-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                        }`}
+                      >
+                        <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+                        Yes
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAnswers((prev) => ({ ...prev, [q.intent]: false }))}
+                        className={`flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-semibold transition ${
+                          answered === false
+                            ? 'border-red-400 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                            : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-red-400 hover:bg-red-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                        }`}
+                      >
+                        <XCircle className="h-4 w-4" aria-hidden="true" />
+                        No
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </Card>
+        </div>
+      )}
+
       <Card padding="md">
         <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-sm text-slate-600 dark:text-slate-300">
-            {hasValues ? 'Ready when you are.' : 'Enter at least one lab value to continue.'}
+            {showQuestions
+              ? `${Object.keys(answers).length} of ${questions.length} questions answered.`
+              : hasValues
+              ? 'Ready when you are.'
+              : 'Enter at least one lab value to continue.'}
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" onClick={() => navigate('/scan')}>
-              Back to scan
-            </Button>
-            <Button
-              size="xl"
-              loading={loadingTriage}
-              onClick={handleAnalyze}
-              disabled={!hasValues}
-              rightIcon={
-                loadingTriage ? null : <ArrowRight className="h-5 w-5" aria-hidden="true" />
-              }
-              leftIcon={
-                !loadingTriage ? <Sparkles className="h-5 w-5" aria-hidden="true" /> : null
-              }
-              aria-label="Analyze results"
-            >
-              {loadingTriage ? 'Analyzing…' : 'Analyze Results'}
-            </Button>
+            {showQuestions ? (
+              <>
+                <Button
+                  variant="secondary"
+                  onClick={handleSkipQuestions}
+                  disabled={loadingTriage}
+                >
+                  Skip questions
+                </Button>
+                <Button
+                  size="xl"
+                  loading={loadingTriage}
+                  onClick={handleAnalyze}
+                  rightIcon={loadingTriage ? null : <ArrowRight className="h-5 w-5" aria-hidden="true" />}
+                  leftIcon={!loadingTriage ? <Sparkles className="h-5 w-5" aria-hidden="true" /> : null}
+                >
+                  {loadingTriage ? 'Analyzing…' : 'Analyze with My Answers'}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="secondary" onClick={() => navigate('/scan')}>
+                  Back to scan
+                </Button>
+                <Button
+                  size="xl"
+                  loading={isLoading}
+                  onClick={handleAnalyze}
+                  disabled={!hasValues}
+                  rightIcon={isLoading ? null : <ArrowRight className="h-5 w-5" aria-hidden="true" />}
+                  leftIcon={!isLoading ? <Sparkles className="h-5 w-5" aria-hidden="true" /> : null}
+                  aria-label="Analyze results"
+                >
+                  {loadingQuestions ? 'Checking values…' : loadingTriage ? 'Analyzing…' : 'Analyze Results'}
+                </Button>
+              </>
+            )}
           </div>
         </div>
-        {loadingTriage && (
+        {isLoading && (
           <div className="mt-4 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
             <Spinner size="sm" />
-            Running BERT triage model…
+            {loadingQuestions ? 'Looking for relevant questions…' : 'Running BERT triage model…'}
           </div>
         )}
       </Card>

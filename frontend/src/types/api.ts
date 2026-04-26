@@ -10,9 +10,30 @@ import type { Doctor, NFZQueueEntry } from './doctor'
 // ---- POST /api/predict --------------------------------------------------
 export interface PredictRequest {
   input: PatientInput
+  symptom_tokens?: string[]
 }
 
 export interface PredictResponse extends TriageResult {}
+
+// ---- POST /api/compute_triggers -----------------------------------------
+export interface ComputeTriggersRequest {
+  age: number
+  sex: string
+  values: Record<string, number | null>
+}
+
+export interface AdaptiveQuestion {
+  trigger: string
+  text: string
+  token_yes: string
+  token_no: string
+  intent: string
+}
+
+export interface ComputeTriggersResponse {
+  triggers: string[]
+  questions: AdaptiveQuestion[]
+}
 
 // ---- POST /api/scan -----------------------------------------------------
 /** The image is sent as base64 data-URL. Backend decodes + forwards to Opus Vision. */
@@ -42,8 +63,13 @@ export interface ExplainRequest {
 export interface ExplainResponse extends OpusExplanation {}
 
 // ---- POST /api/trends ---------------------------------------------------
+export interface TrendsHistoryEntry extends PatientInput {
+  /** ISO date or datetime — required for time-aware regression. */
+  collectedAt: string
+}
+
 export interface TrendsRequest {
-  history: PatientInput[]
+  history: TrendsHistoryEntry[]
 }
 
 export interface TrendsResponse extends TrendAnalysis {}
@@ -64,6 +90,8 @@ export interface DoctorsRequest {
   specialty?: string
   city?: string
   province?: string
+  user_lat?: number
+  user_lng?: number
 }
 
 export interface DoctorsResponse {

@@ -30,6 +30,13 @@ _TOKENIZER = None
 _LAB_NORMS: Dict = {}
 _DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
+# Set of vocab tokens that the frontend may submit as symptom_tokens
+# (lowercased). Built once in initialize() from the tokenizer vocab so we can
+# drop OOV tokens before they reach BERT — OOV tokens introduce noise without
+# adding signal (verified empirically: KNOWN tokens have ~2.4× the impact of
+# UNKNOWN ones, with unknowns often pushing predictions toward wrong classes).
+_KNOWN_SYMPTOM_TOKENS: set[str] = set()
+
 _CLASS_THRESHOLDS: Dict[str, float] = {
     "POZ": 0.4829, "GASTRO": 0.2954, "HEMATO": 0.2856, "NEFRO": 0.2938,
     "SOR": 0.3556, "CARDIO": 0.3432, "PULMO": 0.3011, "HEPATO": 0.2840,
@@ -61,6 +68,7 @@ class PatientInput(BaseModel):
     values: Dict[str, Optional[float]] = {}
     notes: Optional[str] = None
     collectedAt: Optional[str] = None
+    symptom_tokens: Optional[List[str]] = []
 
 
 class PredictRequest(BaseModel):
@@ -92,6 +100,19 @@ def initialize(model_path: Path = Path("checkpoints/finetune")):
     _MODEL = BertForMultiLabelClassification.from_pretrained(model_path)
     _MODEL = _MODEL.to(_DEVICE)
     _MODEL.eval()
+
+    # Build the OOV filter set from the actual tokenizer vocab.
+    # Frontend can submit tokens with any prefix (symptom_*, hist_*, etc.) —
+    # only the ones present in vocab will reach BERT.
+    global _KNOWN_SYMPTOM_TOKENS
+    _vocab = _TOKENIZER.get_vocab()
+    _KNOWN_SYMPTOM_TOKENS = {
+        t for t in _vocab
+        if t.startswith(("symptom_", "hist_")) and (t.endswith("_yes") or t.endswith("_no"))
+    }
+    logger.info(
+        f"[predict_real] OOV filter ready: {len(_KNOWN_SYMPTOM_TOKENS)} known symptom/hist tokens"
+    )
 
     thresholds_path = model_path / "class_thresholds.json"
     if thresholds_path.exists():
@@ -175,6 +196,19 @@ async def predict(request: PredictRequest):
     triggers = extract_triggers(tokens)
     for trigger in triggers[:5]:
         tokens.append(f"TRIGGER_{trigger}")
+
+    # Append user-provided symptom tokens — drop OOV first.
+    # Frontend may send 50+ tokens (HIST_*, novel SYMPTOM_*) but only ~19 are in
+    # the BERT vocab. OOV tokens introduce noise; we silently filter them out so
+    # the model sees a clean signal. The full token set is still preserved on
+    # the request for downstream consumers (Opus explain, audit, history).
+    raw_tokens = inp.symptom_tokens or []
+    kept = [t for t in raw_tokens if t.lower() in _KNOWN_SYMPTOM_TOKENS]
+    dropped = len(raw_tokens) - len(kept)
+    if dropped:
+        logger.info(f"[predict_real] OOV filter: dropped {dropped}/{len(raw_tokens)} tokens, kept {len(kept)}")
+    for st in kept[:12]:  # cap at 12 to stay within 128-token limit
+        tokens.append(st.lower())
 
     # --- Tokenize ---
     sequence_str = " ".join(tokens)

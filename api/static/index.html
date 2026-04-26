@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BloodAI — Triage Tester</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; padding: 2rem; }
+  h1 { font-size: 1.6rem; font-weight: 700; color: #fff; margin-bottom: 0.25rem; }
+  .subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 2rem; }
+  .card { background: #1e2433; border: 1px solid #2d3748; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+  .card h2 { font-size: 1rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.75rem; }
+  .field label { display: block; font-size: 0.75rem; color: #64748b; margin-bottom: 0.25rem; }
+  .field input, .field select { width: 100%; padding: 0.5rem 0.75rem; background: #0f1117; border: 1px solid #2d3748; border-radius: 6px; color: #e2e8f0; font-size: 0.9rem; }
+  .field input:focus, .field select:focus { outline: none; border-color: #6366f1; }
+  .mode-toggle { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+  .mode-btn { padding: 0.4rem 1rem; border-radius: 6px; border: 1px solid #2d3748; background: #0f1117; color: #64748b; cursor: pointer; font-size: 0.85rem; transition: all 0.15s; }
+  .mode-btn.active { background: #6366f1; border-color: #6366f1; color: #fff; }
+  button.submit { width: 100%; padding: 0.75rem; background: #6366f1; border: none; border-radius: 8px; color: #fff; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+  button.submit:hover { background: #4f46e5; }
+  button.submit:disabled { background: #374151; color: #6b7280; cursor: not-allowed; }
+  .flags { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .flag { padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
+  .flag.HEMATO { background: #7c3aed22; border: 1px solid #7c3aed; color: #a78bfa; }
+  .flag.NEFRO  { background: #0891b222; border: 1px solid #0891b2; color: #38bdf8; }
+  .flag.CARDIO { background: #dc262622; border: 1px solid #dc2626; color: #f87171; }
+  .flag.GASTRO { background: #d9770622; border: 1px solid #d97706; color: #fbbf24; }
+  .flag.PULMO  { background: #05966922; border: 1px solid #059669; color: #34d399; }
+  .flag.HEPATO { background: #b4560422; border: 1px solid #b45309; color: #d97706; }
+  .flag.SOR    { background: #dc262644; border: 1px solid #dc2626; color: #ef4444; }
+  .flag.POZ    { background: #16a34a22; border: 1px solid #16a34a; color: #4ade80; }
+  .bar-row { margin-bottom: 0.5rem; }
+  .bar-label { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.25rem; }
+  .bar-label span:first-child { color: #94a3b8; }
+  .bar-label span:last-child { color: #e2e8f0; font-weight: 600; }
+  .bar-track { background: #0f1117; border-radius: 4px; height: 8px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+  .bar-fill.high { background: #6366f1; }
+  .bar-fill.mid  { background: #0891b2; }
+  .bar-fill.low  { background: #374151; }
+  .explanation { background: #0f1117; border: 1px solid #2d3748; border-radius: 8px; padding: 1rem; white-space: pre-wrap; font-size: 0.875rem; line-height: 1.7; color: #cbd5e1; }
+  .hidden { display: none; }
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #ffffff44; border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 0.5rem; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error { color: #f87171; font-size: 0.85rem; padding: 0.75rem; background: #7f1d1d22; border: 1px solid #7f1d1d; border-radius: 6px; }
+  .attn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem; }
+  .attn-item { background: #0f1117; border-radius: 6px; padding: 0.5rem 0.75rem; }
+  .attn-item .token { font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; }
+  .attn-item .score { font-size: 0.9rem; font-weight: 700; color: #6366f1; }
+</style>
+</head>
+<body>
+
+<h1>🩸 BloodAI Triage Tester</h1>
+<p class="subtitle">Mock endpoint — BERT fine-tuning w toku. Frontend test harness.</p>
+
+<div class="card">
+  <h2>Dane pacjenta</h2>
+  <div class="grid">
+    <div class="field">
+      <label>Wiek</label>
+      <input type="number" id="age" value="65" min="1" max="120">
+    </div>
+    <div class="field">
+      <label>Płeć</label>
+      <select id="sex">
+        <option value="M">Mężczyzna (M)</option>
+        <option value="F">Kobieta (F)</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Wyniki badań (g/dL, mg/dL, etc.)</h2>
+  <div class="grid">
+    <div class="field"><label>HGB (hemoglobina)</label><input type="number" id="HGB" placeholder="np. 9.5" step="0.1"></div>
+    <div class="field"><label>CREATININE (kreatynina)</label><input type="number" id="CREATININE" placeholder="np. 2.1" step="0.01"></div>
+    <div class="field"><label>PLT (płytki)</label><input type="number" id="PLT" placeholder="np. 125" step="1"></div>
+    <div class="field"><label>WBC (leukocyty)</label><input type="number" id="WBC" placeholder="np. 6.5" step="0.1"></div>
+    <div class="field"><label>ALT (ALAT)</label><input type="number" id="ALT" placeholder="np. 45" step="1"></div>
+    <div class="field"><label>MCV</label><input type="number" id="MCV" placeholder="np. 78" step="1"></div>
+    <div class="field"><label>HCT (hematokryt)</label><input type="number" id="HCT" placeholder="np. 28" step="0.1"></div>
+    <div class="field"><label>AST (AspAT)</label><input type="number" id="AST" placeholder="np. 38" step="1"></div>
+    <div class="field"><label>UREA (mocznik)</label><input type="number" id="UREA" placeholder="np. 12" step="0.1"></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Tryb wyjaśnienia</h2>
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="btn-patient" onclick="setMode('patient')">👤 Pacjent</button>
+    <button class="mode-btn" id="btn-clinical" onclick="setMode('clinical')">🩺 Kliniczny</button>
+  </div>
+  <button class="submit" id="submit-btn" onclick="runTriage()">Analizuj krew</button>
+</div>
+
+<div id="error-box" class="hidden error card"></div>
+
+<div id="results" class="hidden">
+  <div class="card">
+    <h2>Triage — Flagi</h2>
+    <div id="flags-row" class="flags"></div>
+    <h2 style="margin-top:1rem">Prawdopodobieństwa</h2>
+    <div id="prob-bars" style="margin-top:0.75rem"></div>
+  </div>
+  <div class="card">
+    <h2>Attention Heatmap (top tokeny)</h2>
+    <div id="attn-grid" class="attn-grid"></div>
+  </div>
+  <div class="card">
+    <h2>Wyjaśnienie AI</h2>
+    <div id="explanation" class="explanation"></div>
+  </div>
+</div>
+
+<script>
+let currentMode = 'patient';
+let lastPredict = null;
+
+function setMode(m) {
+  currentMode = m;
+  document.getElementById('btn-patient').classList.toggle('active', m === 'patient');
+  document.getElementById('btn-clinical').classList.toggle('active', m === 'clinical');
+}
+
+function getValues() {
+  const fields = ['HGB','CREATININE','PLT','WBC','ALT','MCV','HCT','AST','UREA'];
+  const values = {};
+  for (const f of fields) {
+    const v = parseFloat(document.getElementById(f).value);
+    if (!isNaN(v)) values[f] = v;
+  }
+  return values;
+}
+
+function showError(msg) {
+  const box = document.getElementById('error-box');
+  box.textContent = '⚠️ ' + msg;
+  box.classList.remove('hidden');
+}
+
+function hideError() {
+  document.getElementById('error-box').classList.add('hidden');
+}
+
+function barColor(prob) {
+  if (prob >= 0.6) return 'high';
+  if (prob >= 0.35) return 'mid';
+  return 'low';
+}
+
+async function runTriage() {
+  hideError();
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Analiza...';
+
+  const age = parseInt(document.getElementById('age').value);
+  const sex = document.getElementById('sex').value;
+  const values = getValues();
+  const scan_id = 'scan-' + Date.now();
+
+  try {
+    // Step 1: /predict
+    const predResp = await fetch('/predict', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ age, sex, values, scan_id })
+    });
+    if (!predResp.ok) throw new Error('POST /predict → ' + predResp.status);
+    lastPredict = await predResp.json();
+
+    // Step 2: /explain
+    const expResp = await fetch('/explain', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        age, sex, values,
+        flags: lastPredict.flags,
+        probabilities: lastPredict.probabilities,
+        attention: lastPredict.attention,
+        mode: currentMode,
+        scan_id
+      })
+    });
+    if (!expResp.ok) throw new Error('POST /explain → ' + expResp.status);
+    const expData = await expResp.json();
+
+    renderResults(lastPredict, expData.explanation);
+  } catch(e) {
+    showError(e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Analizuj krew';
+  }
+}
+
+function renderResults(pred, explanation) {
+  document.getElementById('results').classList.remove('hidden');
+
+  // Flags
+  const flagsEl = document.getElementById('flags-row');
+  flagsEl.innerHTML = pred.flags.map(f =>
+    `<span class="flag ${f}">${f}</span>`
+  ).join('');
+
+  // Probability bars
+  const sorted = Object.entries(pred.probabilities).sort((a,b) => b[1]-a[1]);
+  const barsEl = document.getElementById('prob-bars');
+  barsEl.innerHTML = sorted.map(([label, prob]) => {
+    const pct = Math.round(prob * 100);
+    const cls = barColor(prob);
+    return `<div class="bar-row">
+      <div class="bar-label"><span>${label}</span><span>${pct}%</span></div>
+      <div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+
+  // Attention
+  const attnSorted = Object.entries(pred.attention).sort((a,b) => b[1]-a[1]).slice(0,8);
+  document.getElementById('attn-grid').innerHTML = attnSorted.map(([token, score]) =>
+    `<div class="attn-item"><div class="token">${token}</div><div class="score">${(score*100).toFixed(1)}%</div></div>`
+  ).join('');
+
+  // Explanation
+  document.getElementById('explanation').textContent = explanation;
+
+  document.getElementById('results').scrollIntoView({behavior:'smooth'});
+}
+</script>
+</body>
+</html>

@@ -1,13 +1,19 @@
 import type { LabParam, LabValue, ParameterStatus } from '../types/medical'
 import { LAB_REFERENCE } from './constants'
 
-export function classifyValue(param: LabParam, value: number | null | undefined): ParameterStatus {
+export function classifyValue(
+  param: LabParam,
+  value: number | null | undefined,
+  range?: { low: number; high: number } | null,
+): ParameterStatus {
   if (value == null || Number.isNaN(value)) return 'unknown'
   const ref = LAB_REFERENCE[param]
+  const low = range?.low ?? ref.low
+  const high = range?.high ?? ref.high
   if (ref.criticalLow != null && value <= ref.criticalLow) return 'critical'
   if (ref.criticalHigh != null && value >= ref.criticalHigh) return 'critical'
-  if (value < ref.low) return 'low'
-  if (value > ref.high) return 'high'
+  if (value < low) return 'low'
+  if (value > high) return 'high'
   return 'normal'
 }
 
@@ -74,7 +80,7 @@ export function formatWaitDays(n?: number | null): string {
 
 export function formatPricePln(n?: number): string {
   if (n == null) return '—'
-  return `${n} zł`
+  return `${n} PLN`
 }
 
 /** Generates a short pseudo-unique id for local history entries. */

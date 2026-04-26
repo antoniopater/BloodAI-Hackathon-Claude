@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import L from 'leaflet'
 import type { Doctor } from '../../types/doctor'
+import type { GeoCoords } from '../../store/useAppStore'
 
 // Fix default icon paths (Leaflet looks for images relative to CSS which vite can't resolve).
 // Point at CDN icons so marker pins show up.
@@ -14,11 +15,21 @@ const DefaultIcon = L.icon({
   popupAnchor: [1, -34],
   shadowSize: [41, 41],
 })
+
+const UserIcon = L.divIcon({
+  className: '',
+  html: '<div style="width:14px;height:14px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 0 0 2px #3b82f6"></div>',
+  iconSize: [14, 14],
+  iconAnchor: [7, 7],
+})
+
 L.Marker.prototype.options.icon = DefaultIcon
 
 interface DoctorMapProps {
   doctors: Doctor[]
   height?: number
+  /** User's GPS position — shown as a blue dot when provided. */
+  userLocation?: GeoCoords
   /** Fallback center when none of the doctors have coords. Defaults to Warsaw. */
   fallbackCenter?: [number, number]
 }
@@ -26,6 +37,7 @@ interface DoctorMapProps {
 export function DoctorMap({
   doctors,
   height = 400,
+  userLocation,
   fallbackCenter = [52.2297, 21.0122],
 }: DoctorMapProps) {
   const withCoords = useMemo(
@@ -34,13 +46,14 @@ export function DoctorMap({
   )
 
   const center: [number, number] = useMemo(() => {
+    if (userLocation) return [userLocation.lat, userLocation.lng]
     if (withCoords.length === 0) return fallbackCenter
     const avgLat = withCoords.reduce((s, d) => s + (d.lat as number), 0) / withCoords.length
     const avgLng = withCoords.reduce((s, d) => s + (d.lng as number), 0) / withCoords.length
     return [avgLat, avgLng]
-  }, [withCoords, fallbackCenter])
+  }, [withCoords, userLocation, fallbackCenter])
 
-  if (withCoords.length === 0) {
+  if (withCoords.length === 0 && !userLocation) {
     return (
       <div
         className="flex items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800/40 dark:text-slate-300"
@@ -53,11 +66,18 @@ export function DoctorMap({
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700" style={{ height }}>
-      <MapContainer center={center} zoom={11} style={{ height: '100%', width: '100%' }} scrollWheelZoom>
+      <MapContainer center={center} zoom={userLocation ? 12 : 11} style={{ height: '100%', width: '100%' }} scrollWheelZoom>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        {userLocation && (
+          <Marker position={[userLocation.lat, userLocation.lng]} icon={UserIcon}>
+            <Popup>
+              <div className="text-sm font-semibold">Your location</div>
+            </Popup>
+          </Marker>
+        )}
         {withCoords.map((d) => (
           <Marker key={d.id} position={[d.lat as number, d.lng as number]}>
             <Popup>

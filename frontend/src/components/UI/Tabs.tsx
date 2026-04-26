@@ -51,11 +51,13 @@ export function Tabs<T extends string>({
             tabIndex={active ? 0 : -1}
             onClick={() => onChange(tab.id)}
             className={cn(
-              'inline-flex items-center gap-2 min-h-[44px] px-4 text-base font-semibold transition-colors',
+              'inline-flex items-center gap-2 min-h-[44px] px-4 text-sm font-semibold transition-all duration-200',
               'focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-500/40',
               variant === 'pill' && 'rounded-lg',
-              variant === 'pill' && active && 'bg-white dark:bg-slate-700 text-primary-800 dark:text-primary-100 shadow-sm',
-              variant === 'pill' && !active && 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50',
+              variant === 'pill' && active &&
+                'bg-white dark:bg-slate-700 text-primary-700 dark:text-primary-200 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10',
+              variant === 'pill' && !active &&
+                'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-700/40',
               variant === 'underline' &&
                 (active
                   ? 'border-b-2 border-primary-700 text-primary-800 dark:text-primary-100 -mb-px'

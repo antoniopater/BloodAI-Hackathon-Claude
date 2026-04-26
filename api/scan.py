@@ -44,6 +44,9 @@ RUNS_DIR = REPO_ROOT / "tests" / "vision" / "runs"
 # Model ID used for requests. Bump together with the anthropic SDK version.
 DEFAULT_MODEL_ID = os.getenv("BLOODAI_MODEL_ID", "claude-opus-4-7")
 
+# Feature flag: set to false to return mock scan responses (for testing without API calls)
+USE_OPUS_API = os.getenv("USE_OPUS_API", "true").lower() in ("true", "1", "yes")
+
 # Rough cost estimate in USD per input/output token (for logging only).
 # Update when Anthropic publishes new prices. These are loose guardrails.
 _COST_PER_MTOK_IN = 15.0
@@ -271,6 +274,40 @@ def _log_run(
 
 
 # ---------------------------------------------------------------------------
+# Mock response generator (for testing, when USE_OPUS_API=false)
+# ---------------------------------------------------------------------------
+
+def _mock_scan_response() -> ScanResponseModel:
+    """Return a mock scan response without calling Opus Vision."""
+    return ScanResponseModel(
+        values={
+            "HGB": 13.5,
+            "HCT": 40.5,
+            "PLT": 250.0,
+            "WBC": 7.2,
+            "MCV": 88.0,
+            "CREATININE": 0.9,
+            "ALT": 25.0,
+            "AST": 28.0,
+            "UREA": 35.0,
+        },
+        confidence={
+            "HGB": 0.95,
+            "HCT": 0.93,
+            "PLT": 0.90,
+            "WBC": 0.94,
+            "MCV": 0.92,
+            "CREATININE": 0.91,
+            "ALT": 0.88,
+            "AST": 0.89,
+            "UREA": 0.85,
+        },
+        rawText="[MOCK] Mock scan response (USE_OPUS_API=false)",
+        collectedAt="2026-04-25",
+    )
+
+
+# ---------------------------------------------------------------------------
 # FastAPI router
 # ---------------------------------------------------------------------------
 
@@ -279,7 +316,11 @@ scan_router = APIRouter()
 
 @scan_router.post("/scan", response_model=ScanResponseModel)
 async def scan_endpoint(req: ScanRequest) -> ScanResponseModel:
-    """Extract structured lab values from an image / PDF of a morfologia sheet."""
+    """Extract structured lab values from an image / PDF of a morfologia sheet (or mock if USE_OPUS_API=false)."""
+    if not USE_OPUS_API:
+        logger.info("USE_OPUS_API=false — returning mock scan response")
+        return _mock_scan_response()
+
     # Lazy-load the norms DB so this module can be imported without I/O.
     from data.utils import load_lab_norms
     norms_path = REPO_ROOT / "config" / "lab_norms.json"

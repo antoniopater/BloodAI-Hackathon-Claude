@@ -32,10 +32,11 @@ _COMORBIDITIES = _MED_CTX["comorbidity_patterns"]
 _CKD_STAGING = _MED_CTX["creatinine_ckd_staging"]
 
 # ---------------------------------------------------------------------------
-# Anthropic client (lazy-init to avoid import errors if SDK missing)
+# Config
 # ---------------------------------------------------------------------------
 
 _MODEL = os.getenv("BLOODAI_MODEL_ID", "claude-opus-4-7")
+_USE_OPUS_API = os.getenv("USE_OPUS_API", "true").lower() in ("true", "1", "yes")
 _client = None
 
 
@@ -88,11 +89,19 @@ class ExplainRequest(BaseModel):
     mode: str = "patient"
 
 
+class SuggestedTest(BaseModel):
+    """An additional lab/imaging test the patient should consider getting."""
+    name: str  # e.g. "Ferrytyna" / "Urinalysis" / "TSH"
+    reason: str  # short justification (max ~120 chars)
+    urgency: str = "routine"  # "routine" | "soon" | "urgent"
+
+
 class ExplainResponse(BaseModel):
     patientSummary: str
     clinicalSummary: Optional[str] = None
     followUpQuestions: Optional[List[str]] = None
     redFlags: Optional[List[str]] = None
+    suggestedTests: Optional[List[SuggestedTest]] = None
 
 
 # ---------------------------------------------------------------------------
@@ -281,6 +290,53 @@ _SPECIALTY_DISPLAY = {
 
 
 # ---------------------------------------------------------------------------
+# Opus response parsers
+# ---------------------------------------------------------------------------
+
+def _parse_opus_json(raw: str) -> dict:
+    """Extract a JSON object from Opus output. Tolerates leading/trailing text
+    and ```json fences. Returns {} if parsing fails."""
+    if not raw:
+        return {}
+    s = raw.strip()
+    if s.startswith("```"):
+        s = s.strip("`")
+        if s.lower().startswith("json"):
+            s = s[4:]
+    start = s.find("{")
+    end = s.rfind("}")
+    if start == -1 or end == -1 or end <= start:
+        return {}
+    try:
+        return json.loads(s[start:end + 1])
+    except json.JSONDecodeError:
+        logger.warning("Opus returned non-parseable JSON; using raw fallback")
+        return {}
+
+
+_VALID_URGENCY = {"routine", "soon", "urgent"}
+
+
+def _parse_suggested_tests(raw) -> List[SuggestedTest]:
+    """Coerce Opus' suggested_tests array into validated SuggestedTest models."""
+    if not isinstance(raw, list):
+        return []
+    out: List[SuggestedTest] = []
+    for item in raw[:8]:
+        if not isinstance(item, dict):
+            continue
+        name = (item.get("name") or "").strip()
+        reason = (item.get("reason") or "").strip()
+        urgency = (item.get("urgency") or "routine").strip().lower()
+        if not name:
+            continue
+        if urgency not in _VALID_URGENCY:
+            urgency = "routine"
+        out.append(SuggestedTest(name=name[:80], reason=reason[:200], urgency=urgency))
+    return out
+
+
+# ---------------------------------------------------------------------------
 # Opus prompt builders
 # ---------------------------------------------------------------------------
 
@@ -300,18 +356,21 @@ def _build_patient_prompt(inp: ExplainInput, vals: dict, top: str, findings: Lis
     if top == "ER":
         emergency_line = "\nIMPORTANT: Values are critically abnormal — mention going to Emergency Department urgently."
 
-    return f"""You are a medical assistant explaining blood test results to a patient in plain, empathetic English.
+    return f"""You are a medical assistant explaining blood test results to a patient. Return ONLY valid JSON, no other text.
 
 Patient: {inp.age}-year-old {sex_label}
 {findings_block}{comorbidity_block}{emergency_line}
 AI model suggests referral to: {specialist}
 
-Write 2-3 sentences (max 120 words) for the patient that:
-- Explain what the results suggest in simple, non-technical language
-- State which specialist might help and why
-- Always end with: "Please consult your doctor before making any health decisions."
-- Do NOT use the word "diagnose" or make definitive claims
-- Do NOT repeat raw numbers unless they are critically important"""
+Return this exact JSON structure:
+{{
+  "patient_summary": "2-3 plain-English sentences (max 120 words). Empathetic, non-technical. State which specialist might help and why. End with: 'Please consult your doctor before making any health decisions.' Do NOT use 'diagnose' or definitive claims. Do NOT repeat raw numbers unless critical.",
+  "suggested_tests": [
+    {{"name": "<Test name>", "reason": "<one short sentence — what it would clarify>", "urgency": "routine|soon|urgent"}}
+  ]
+}}
+
+For "suggested_tests": list 3-5 concrete additional lab/imaging tests that would clarify the abnormal findings or rule out the suspected condition. Each "reason" must be plain-language (max ~120 chars). Use "urgent" only if the result is life-threatening (e.g. ER referral). Use English test names. Examples: "Ferritin", "Reticulocyte count", "B12", "Urinalysis", "eGFR", "Lipid panel", "TSH", "Hepatitis panel"."""
 
 
 def _build_clinical_prompt(
@@ -353,8 +412,104 @@ Primary referral: {top}
 Return this exact JSON structure:
 {{
   "patient_summary": "2-3 plain-English sentences for the patient (max 120 words, empathetic, end with 'consult your doctor')",
-  "clinical_assessment": "Structured note: Urgency: {urgency}. Key findings: [list]. Primary referral: {top}. Recommended next steps: [list]. (max 100 words)"
-}}"""
+  "clinical_assessment": "Structured note: Urgency: {urgency}. Key findings: [list]. Primary referral: {top}. Recommended next steps: [list]. (max 100 words)",
+  "suggested_tests": [
+    {{"name": "<Test>", "reason": "<clinical justification, 1 sentence>", "urgency": "routine|soon|urgent"}}
+  ]
+}}
+
+For "suggested_tests": list 3-6 concrete follow-up labs/imaging that confirm or rule out the differential. Use specific test names (Ferritin, TIBC, Reticulocytes, eGFR, Urinalysis, ANA, Hepatitis panel, AbdoUS, etc.). Match urgency to the case (urgent only if {urgency} is CRITICAL)."""
+
+
+# ---------------------------------------------------------------------------
+# Mock response generators (for testing, when USE_OPUS_API=false)
+# ---------------------------------------------------------------------------
+
+_MOCK_SUGGESTED_TESTS: Dict[str, List[Dict[str, str]]] = {
+    "Hematology": [
+        {"name": "Ferritin", "reason": "Distinguish iron-deficiency from other anemias.", "urgency": "soon"},
+        {"name": "Reticulocyte count", "reason": "Assess bone-marrow response to anemia.", "urgency": "soon"},
+        {"name": "Vitamin B12 + Folate", "reason": "Rule out megaloblastic causes.", "urgency": "routine"},
+        {"name": "Peripheral blood smear", "reason": "Look for abnormal cell morphology.", "urgency": "routine"},
+    ],
+    "Nephrology": [
+        {"name": "eGFR (CKD-EPI)", "reason": "Quantify kidney function.", "urgency": "soon"},
+        {"name": "Urinalysis + ACR", "reason": "Detect proteinuria / haematuria.", "urgency": "soon"},
+        {"name": "Electrolytes (Na, K)", "reason": "Check for renal-related imbalances.", "urgency": "soon"},
+        {"name": "Renal ultrasound", "reason": "Rule out structural causes.", "urgency": "routine"},
+    ],
+    "Hepatology": [
+        {"name": "GGT + Alkaline phosphatase", "reason": "Localise the liver injury (cholestatic vs hepatocellular).", "urgency": "soon"},
+        {"name": "Hepatitis B/C panel", "reason": "Rule out viral hepatitis.", "urgency": "soon"},
+        {"name": "Bilirubin (total + direct)", "reason": "Assess liver excretory function.", "urgency": "routine"},
+        {"name": "Abdominal ultrasound", "reason": "Visualise liver parenchyma & bile ducts.", "urgency": "routine"},
+    ],
+    "Cardiology": [
+        {"name": "Lipid panel", "reason": "Cardiovascular risk stratification.", "urgency": "routine"},
+        {"name": "Troponin (high-sensitivity)", "reason": "Rule out myocardial injury.", "urgency": "soon"},
+        {"name": "BNP / NT-proBNP", "reason": "Assess for heart failure.", "urgency": "soon"},
+        {"name": "12-lead ECG", "reason": "Detect arrhythmia or ischaemia.", "urgency": "routine"},
+    ],
+    "Gastroenterology": [
+        {"name": "Faecal occult blood / calprotectin", "reason": "Screen for GI bleeding or inflammation.", "urgency": "soon"},
+        {"name": "Lipase + amylase", "reason": "Rule out pancreatitis.", "urgency": "routine"},
+        {"name": "H. pylori test", "reason": "Common cause of gastric pathology.", "urgency": "routine"},
+    ],
+    "Pulmonology": [
+        {"name": "Chest X-ray", "reason": "Visualise lung fields.", "urgency": "soon"},
+        {"name": "Spirometry", "reason": "Quantify lung function.", "urgency": "routine"},
+        {"name": "D-dimer", "reason": "Rule out pulmonary embolism if suspected.", "urgency": "soon"},
+    ],
+    "ER": [
+        {"name": "Complete metabolic panel", "reason": "Full electrolyte / kidney / liver baseline.", "urgency": "urgent"},
+        {"name": "Lactate", "reason": "Assess tissue perfusion / sepsis risk.", "urgency": "urgent"},
+        {"name": "Coagulation panel (PT/INR/aPTT)", "reason": "Bleeding risk evaluation.", "urgency": "urgent"},
+        {"name": "Type & screen", "reason": "Prepare for possible transfusion.", "urgency": "urgent"},
+    ],
+    "POZ": [
+        {"name": "TSH", "reason": "Routine thyroid screening.", "urgency": "routine"},
+        {"name": "Lipid panel", "reason": "Cardiovascular risk baseline.", "urgency": "routine"},
+        {"name": "Vitamin D (25-OH)", "reason": "Common deficiency causing fatigue.", "urgency": "routine"},
+        {"name": "HbA1c", "reason": "Diabetes screening.", "urgency": "routine"},
+    ],
+}
+
+
+def _mock_suggested_tests(top_class: str) -> List[SuggestedTest]:
+    return [SuggestedTest(**t) for t in _MOCK_SUGGESTED_TESTS.get(top_class, _MOCK_SUGGESTED_TESTS["POZ"])]
+
+
+def _mock_explain_response(request: ExplainRequest) -> ExplainResponse:
+    """Generate mock explain response without calling Opus."""
+    inp = request.input
+    vals = {k: v for k, v in (inp.values or {}).items() if v is not None}
+    flagged = _flagged_classes(request.triage)
+    follow_ups = _FOLLOW_UPS.get(flagged[0] if flagged else "POZ", _FOLLOW_UPS["POZ"])
+    patient_findings, clinical_findings = _analyse_abnormals(vals, inp.age, inp.sex)
+    top = _top_class(request.triage)
+    suggested = _mock_suggested_tests(top)
+
+    mode = request.mode
+    if mode == "clinical":
+        patient_summary = f"[MOCK] {len(patient_findings)} abnormal findings detected in {inp.age}yo {inp.sex}."
+        clinical_summary = f"Urgency: ROUTINE. Key findings: {', '.join(clinical_findings[:3])}."
+        return ExplainResponse(
+            patientSummary=patient_summary,
+            clinicalSummary=clinical_summary,
+            followUpQuestions=follow_ups,
+            redFlags=None,
+            suggestedTests=suggested,
+        )
+    else:  # patient mode
+        specialist = _SPECIALTY_DISPLAY.get(top, "your doctor")
+        patient_summary = f"[MOCK] Your blood test suggests you should see {specialist}. Please consult your doctor before making any health decisions."
+        return ExplainResponse(
+            patientSummary=patient_summary,
+            clinicalSummary=None,
+            followUpQuestions=follow_ups,
+            redFlags=None,
+            suggestedTests=suggested,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -363,7 +518,7 @@ Return this exact JSON structure:
 
 @router.post("/explain", response_model=ExplainResponse)
 async def explain_real(request: ExplainRequest) -> ExplainResponse:
-    """Real /explain — Opus 4.7 generates contextualised summaries."""
+    """Real /explain — Opus 4.7 generates contextualised summaries (or mock if USE_OPUS_API=false)."""
     inp = request.input
     vals = {k: v for k, v in (inp.values or {}).items() if v is not None}
     top = _top_class(request.triage)
@@ -376,6 +531,10 @@ async def explain_real(request: ExplainRequest) -> ExplainResponse:
     flagged = _flagged_classes(request.triage)
     follow_ups = _FOLLOW_UPS.get(flagged[0] if flagged else "POZ", _FOLLOW_UPS["POZ"])
 
+    if not _USE_OPUS_API:
+        logger.info("USE_OPUS_API=false — returning mock explain response")
+        return _mock_explain_response(request)
+
     # Call Opus
     client = _get_client()
     mode = request.mode
@@ -385,42 +544,43 @@ async def explain_real(request: ExplainRequest) -> ExplainResponse:
             prompt = _build_clinical_prompt(inp, vals, request.triage, clinical_findings, comorbidities)
             resp = client.messages.create(
                 model=_MODEL,
-                max_tokens=500,
+                max_tokens=800,
                 messages=[{"role": "user", "content": prompt}],
             )
             raw = resp.content[0].text.strip()
 
-            # Parse JSON response — fall back gracefully if Opus returns unexpected text
-            try:
-                data = json.loads(raw)
-                patient_summary = data.get("patient_summary", raw)
-                clinical_summary = data.get("clinical_assessment", "")
-            except (json.JSONDecodeError, AttributeError):
-                logger.warning("Opus returned non-JSON for clinical mode — using raw text")
-                patient_summary = raw
-                clinical_summary = None
+            data = _parse_opus_json(raw)
+            patient_summary = data.get("patient_summary") or raw
+            clinical_summary = data.get("clinical_assessment") or None
+            suggested_tests = _parse_suggested_tests(data.get("suggested_tests"))
 
             return ExplainResponse(
                 patientSummary=patient_summary,
-                clinicalSummary=clinical_summary or None,
+                clinicalSummary=clinical_summary,
                 followUpQuestions=follow_ups,
                 redFlags=red_flags or None,
+                suggestedTests=suggested_tests or None,
             )
 
         else:  # patient mode
             prompt = _build_patient_prompt(inp, vals, top, patient_findings, comorbidities)
             resp = client.messages.create(
                 model=_MODEL,
-                max_tokens=250,
+                max_tokens=600,
                 messages=[{"role": "user", "content": prompt}],
             )
-            patient_summary = resp.content[0].text.strip()
+            raw = resp.content[0].text.strip()
+
+            data = _parse_opus_json(raw)
+            patient_summary = data.get("patient_summary") or raw
+            suggested_tests = _parse_suggested_tests(data.get("suggested_tests"))
 
             return ExplainResponse(
                 patientSummary=patient_summary,
                 clinicalSummary=None,
                 followUpQuestions=follow_ups,
                 redFlags=red_flags or None,
+                suggestedTests=suggested_tests or None,
             )
 
     except HTTPException:

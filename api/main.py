@@ -14,6 +14,9 @@ import logging
 from pathlib import Path
 from typing import Optional, Dict, List
 
+from dotenv import load_dotenv
+load_dotenv()
+
 import torch
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse, FileResponse
@@ -50,11 +53,16 @@ from api.predict_real import router as predict_real_router  # noqa: E402
 from api.explain_real import router as explain_real_router  # noqa: E402
 from api.nfz import router as nfz_router  # noqa: E402
 from api.doctors import router as doctors_router  # noqa: E402
+from api.recommended_tests import router as recommendations_router  # noqa: E402
+from api.trends import router as trends_router, root_router as trends_root_router  # noqa: E402
 app.include_router(scan_router)
 app.include_router(predict_real_router)
 app.include_router(explain_real_router)
 app.include_router(nfz_router)
 app.include_router(doctors_router)
+app.include_router(recommendations_router)
+app.include_router(trends_router)
+app.include_router(trends_root_router)
 
 MODEL_PATH = None
 TOKENIZER = None
@@ -189,6 +197,7 @@ def load_model(model_path: Path):
 @app.get("/lab_norms")
 async def get_lab_norms():
     """Get reference ranges for all parameters."""
+    global LAB_NORMS
     if not LAB_NORMS:
         config_dir = Path(__file__).parent.parent / "config"
         LAB_NORMS = load_lab_norms(config_dir / "lab_norms.json")
@@ -225,6 +234,57 @@ async def get_questions(param: str, age: Optional[int] = None):
                 matched.append({**rule, "age_group": group})
 
     return {"questions": matched}
+
+
+class ComputeTriggersRequest(BaseModel):
+    age: int
+    sex: str
+    values: Dict[str, Optional[float]] = {}
+
+
+@app.post("/compute_triggers")
+async def compute_triggers_endpoint(req: ComputeTriggersRequest):
+    """Compute active triggers and return matching adaptive questions in one call."""
+    global QUESTIONS_BANK, LAB_NORMS
+    from data.utils import get_age_group
+
+    if not QUESTIONS_BANK:
+        data_dir = Path(__file__).parent.parent / "data"
+        QUESTIONS_BANK = load_questions_bank(data_dir / "questions.json")
+    if not LAB_NORMS:
+        config_dir = Path(__file__).parent.parent / "config"
+        LAB_NORMS = load_lab_norms(config_dir / "lab_norms.json")
+
+    sex_short = "m" if req.sex.lower() == "male" else "f"
+    lab_tokens = []
+    for param, value in req.values.items():
+        if value is None:
+            continue
+        token = get_lab_token_v2(param.upper(), value, req.age, sex_short, LAB_NORMS)
+        lab_tokens.append(token)
+
+    triggers = extract_triggers(lab_tokens)
+    target_group = get_age_group(req.age)
+
+    questions = []
+    for group, rules in QUESTIONS_BANK.items():
+        if group != target_group:
+            continue
+        for rule in rules:
+            if rule.get("trigger") not in triggers:
+                continue
+            rule_gender = rule.get("gender", "").upper()
+            if rule_gender and rule_gender != sex_short.upper():
+                continue
+            questions.append({
+                "trigger": rule["trigger"],
+                "text": rule["text"],
+                "token_yes": rule["token_yes"],
+                "token_no": rule["token_no"],
+                "intent": rule.get("intent", ""),
+            })
+
+    return {"triggers": triggers, "questions": questions}
 
 
 @app.get("/health")

@@ -1,11 +1,11 @@
 import { useCallback, useState } from 'react'
 import { analyzeTrends } from '../services/opusClient'
 import { toApiError } from '../services/apiClient'
-import type { ApiError, TrendsResponse } from '../types/api'
-import type { PatientInput } from '../types/medical'
+import type { ApiError, TrendsHistoryEntry, TrendsResponse } from '../types/api'
+import type { HistoryEntry } from '../types/medical'
 
 interface UseTrendAnalysisResult {
-  run: (history: PatientInput[]) => Promise<TrendsResponse | null>
+  run: (history: HistoryEntry[]) => Promise<TrendsResponse | null>
   loading: boolean
   error: ApiError | null
   result: TrendsResponse | null
@@ -17,11 +17,15 @@ export function useTrendAnalysis(): UseTrendAnalysisResult {
   const [error, setError] = useState<ApiError | null>(null)
   const [result, setResult] = useState<TrendsResponse | null>(null)
 
-  const run = useCallback(async (history: PatientInput[]) => {
+  const run = useCallback(async (history: HistoryEntry[]) => {
     setLoading(true)
     setError(null)
     try {
-      const data = await analyzeTrends({ history })
+      const payload: TrendsHistoryEntry[] = history.map((h) => ({
+        ...h.input,
+        collectedAt: h.input.collectedAt ?? h.createdAt,
+      }))
+      const data = await analyzeTrends({ history: payload })
       setResult(data)
       return data
     } catch (err) {

@@ -5,7 +5,7 @@ import type { PatientInput, TriageResult } from '../types/medical'
 import type { ApiError } from '../types/api'
 
 interface UseBertTriageResult {
-  run: (input: PatientInput) => Promise<TriageResult | null>
+  run: (input: PatientInput, symptomTokens?: string[]) => Promise<TriageResult | null>
   loading: boolean
   error: ApiError | null
   result: TriageResult | null
@@ -17,11 +17,11 @@ export function useBertTriage(): UseBertTriageResult {
   const [error, setError] = useState<ApiError | null>(null)
   const [result, setResult] = useState<TriageResult | null>(null)
 
-  const run = useCallback(async (input: PatientInput) => {
+  const run = useCallback(async (input: PatientInput, symptomTokens?: string[]) => {
     setLoading(true)
     setError(null)
     try {
-      const data = await predictTriage({ input })
+      const data = await predictTriage({ input, symptom_tokens: symptomTokens })
       setResult(data)
       return data
     } catch (err) {

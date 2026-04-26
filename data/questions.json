@@ -2,132 +2,425 @@
   "kids": [
     {
       "trigger": "HGB_LOW",
+      "intent": "FATIGUE_CHECK",
+      "text": "Have you felt unusually tired or weak?",
+      "snomed_code": "271737000",
+      "comment": "Anemia causes fatigue",
+      "token_yes": "SYMPTOM_FATIGUE_YES", "token_no": "SYMPTOM_FATIGUE_NO"
+    },
+    {
+      "trigger": "HGB_LOW",
       "intent": "DIET_CHECK",
-      "text": "Czy dziecko jest niejadkiem / ma dietę ubogą w mięso?",
-      "snomed_code": "235595009", 
-      "comment": "Używamy GERD/Problemów trawiennych jako proxy dla problemów z jedzeniem, ew. brak kodu",
-      "token_yes": "HIST_POOR_DIET_YES", "token_no": "HIST_POOR_DIET_NO"
+      "text": "Do you eat meat, fish, eggs, or are you vegetarian?",
+      "snomed_code": "235595009",
+      "comment": "Iron source assessment for microcytic anemia",
+      "token_yes": "HIST_POOR_DIET_NO", "token_no": "HIST_POOR_DIET_YES"
     },
     {
       "trigger": "PLT_LOW",
       "intent": "BRUISING_CHECK",
-      "text": "Czy u dziecka łatwo powstają siniaki?",
+      "text": "Do you bruise easily or have frequent nosebleeds?",
       "snomed_code": "271737000",
-      "comment": "Proxy: Anemia (często powiązana) - jeśli brak kodu siniaków",
+      "comment": "Low platelets increase bleeding risk",
       "token_yes": "SYMPTOM_EASY_BRUISING_YES", "token_no": "SYMPTOM_EASY_BRUISING_NO"
     },
     {
       "trigger": "WBC_HIGH",
-      "intent": "VOMIT_CHECK",
-      "text": "Czy występują wymioty i ostry ból brzucha?",
+      "intent": "INFECTION_CHECK",
+      "text": "Do you have fever, cough, or sore throat?",
       "snomed_code": "74400008",
-      "comment": "Zapalenie wyrostka (Appendicitis) -> Objaw: Wymioty",
+      "comment": "High WBC suggests infection",
       "token_yes": "SYMPTOM_VOMIT_YES", "token_no": "SYMPTOM_VOMIT_NO"
+    },
+    {
+      "trigger": "WBC_HIGH",
+      "intent": "IMMUNE_RESPONSE_CHECK",
+      "text": "Have you had any recent illnesses or vaccinations?",
+      "snomed_code": "74400008",
+      "comment": "Immune response elevates WBC",
+      "token_yes": "SYMPTOM_IMMUNE_RESPONSE_YES", "token_no": "SYMPTOM_IMMUNE_RESPONSE_NO"
+    },
+    {
+      "trigger": "MCV_LOW",
+      "intent": "IRON_DIET_CHECK",
+      "text": "Does your diet include meat, fish, or leafy greens?",
+      "snomed_code": "235595009",
+      "comment": "Microcytic anemia from iron/B6 deficiency",
+      "token_yes": "HIST_POOR_DIET_NO", "token_no": "HIST_POOR_DIET_YES"
+    },
+    {
+      "trigger": "MCV_HIGH",
+      "intent": "B12_RISK_CHECK",
+      "text": "Do you eat animal products (meat, cheese, eggs)?",
+      "snomed_code": "190634004",
+      "comment": "Vegetarian/vegan diet = B12 deficiency risk",
+      "token_yes": "HIST_VEGAN_DIET_NO", "token_no": "HIST_VEGAN_DIET_YES"
+    },
+    {
+      "trigger": "AST_HIGH",
+      "intent": "MUSCLE_INJURY_CHECK",
+      "text": "Have you had any recent muscle injuries or intense exercise?",
+      "snomed_code": "444896005",
+      "comment": "Muscle breakdown elevates AST",
+      "token_yes": "HIST_MUSCLE_INJURY_YES", "token_no": "HIST_MUSCLE_INJURY_NO"
+    },
+    {
+      "trigger": "UREA_HIGH",
+      "intent": "DEHYDRATION_CHECK",
+      "text": "Have you had vomiting, diarrhea, or fever recently?",
+      "snomed_code": "34095006",
+      "comment": "Prerenal azotemia from dehydration/GI loss",
+      "token_yes": "SYMPTOM_VOMIT_YES", "token_no": "SYMPTOM_VOMIT_NO"
+    },
+    {
+      "trigger": "WBC_LOW",
+      "intent": "IMMUNOSUPPRESSION_CHECK",
+      "text": "Have you had frequent infections or fever?",
+      "snomed_code": "234532001",
+      "comment": "Low WBC increases infection risk",
+      "token_yes": "SYMPTOM_IMMUNOSUPPRESSION_YES", "token_no": "SYMPTOM_IMMUNOSUPPRESSION_NO"
     }
   ],
   "under_30": [
     {
-      "trigger": "CREATININE_HIGH", "gender": "F",
-      "intent": "DYSURIA_CHECK",
-      "text": "Czy odczuwasz pieczenie podczas oddawania moczu?",
-      "snomed_code": "307426000",
-      "token_yes": "SYMPTOM_DYSURIA_YES", "token_no": "SYMPTOM_DYSURIA_NO"
-    },
-    {
-      "trigger": "CREATININE_HIGH",
-      "intent": "HEMATURIA_CHECK",
-      "text": "Czy zauważyłeś zmianę koloru moczu (czerwony/ciemny)?",
-      "snomed_code": "307426000", 
-      "comment": "ZMIANA: Używamy Cystitis (6000+ przypadków) również dla Krwiomoczu",
-      "token_yes": "SYMPTOM_HEMATURIA_YES", "token_no": "SYMPTOM_HEMATURIA_NO"
+      "trigger": "HGB_LOW",
+      "intent": "DYSPNEA_CHECK",
+      "text": "Do you feel short of breath with normal activity?",
+      "snomed_code": "271737000",
+      "comment": "Anemia causes dyspnea",
+      "token_yes": "SYMPTOM_DYSPNEA_YES", "token_no": "SYMPTOM_DYSPNEA_NO"
     },
     {
       "trigger": "HGB_LOW", "gender": "F",
       "intent": "HEAVY_PERIODS",
-      "text": "Czy masz obfite miesiączki?",
+      "text": "Do you have very heavy periods (if applicable)?",
       "snomed_code": "271737000",
+      "comment": "Menstrual blood loss is major cause of anemia in young women",
       "token_yes": "SYMPTOM_HEAVY_PERIODS_YES", "token_no": "SYMPTOM_HEAVY_PERIODS_NO"
+    },
+    {
+      "trigger": "CREATININE_HIGH",
+      "intent": "EDEMA_CHECK",
+      "text": "Do you have swelling in legs, ankles, or face?",
+      "snomed_code": "431855005",
+      "comment": "Kidney dysfunction causes fluid retention",
+      "token_yes": "SYMPTOM_EDEMA_YES", "token_no": "SYMPTOM_EDEMA_NO"
+    },
+    {
+      "trigger": "CREATININE_HIGH",
+      "intent": "HEMATURIA_CHECK",
+      "text": "Have you noticed blood or dark colour in your urine?",
+      "snomed_code": "307426000",
+      "comment": "Haematuria suggests glomerular or urinary tract disease",
+      "token_yes": "SYMPTOM_HEMATURIA_YES", "token_no": "SYMPTOM_HEMATURIA_NO"
     },
     {
       "trigger": "ALT_HIGH",
       "intent": "ALCOHOL_CHECK",
-      "text": "Czy spożywasz alkohol częściej niż raz w tygodniu (ryzyko stłuszczenia)?",
+      "text": "Do you drink alcohol? How often and how much?",
       "snomed_code": "162864005",
-      "comment": "ZMIANA: Używamy Otyłości BMI 30+ jako proxy stylu życia/stłuszczenia wątroby",
+      "comment": "Alcohol causes hepatitis and elevates ALT",
       "token_yes": "HIST_ALCOHOL_USE_YES", "token_no": "HIST_ALCOHOL_USE_NO"
+    },
+    {
+      "trigger": "ALT_HIGH",
+      "intent": "MEDICATION_LIVER_CHECK",
+      "text": "Do you take acetaminophen, NSAIDs, or supplements regularly?",
+      "snomed_code": "40275004",
+      "comment": "Hepatotoxic medications can cause liver injury",
+      "token_yes": "HIST_HEPATOTOXIC_MED_YES", "token_no": "HIST_HEPATOTOXIC_MED_NO"
+    },
+    {
+      "trigger": "PLT_LOW",
+      "intent": "BLEEDING_DISORDER_CHECK",
+      "text": "Do you have easy bruising or prolonged bleeding from cuts?",
+      "snomed_code": "271737000",
+      "comment": "Platelet dysfunction assessment",
+      "token_yes": "SYMPTOM_EASY_BRUISING_YES", "token_no": "SYMPTOM_EASY_BRUISING_NO"
+    },
+    {
+      "trigger": "WBC_HIGH",
+      "intent": "SYSTEMIC_INFECTION_CHECK",
+      "text": "Do you have persistent cough, night sweats, or fever?",
+      "snomed_code": "40122008",
+      "comment": "TB, pneumonia, other infections elevate WBC",
+      "token_yes": "SYMPTOM_DYSPNEA_YES", "token_no": "SYMPTOM_DYSPNEA_NO"
+    },
+    {
+      "trigger": "MCV_LOW",
+      "intent": "IRON_DEFICIENCY_CHECK",
+      "text": "Are you vegetarian/vegan or avoid red meat?",
+      "snomed_code": "235595009",
+      "comment": "Dietary iron deficiency causes microcytic anemia",
+      "token_yes": "HIST_POOR_DIET_YES", "token_no": "HIST_POOR_DIET_NO"
+    },
+    {
+      "trigger": "MCV_HIGH",
+      "intent": "B12_FOLATE_CHECK",
+      "text": "Do you drink heavily or take any medications long-term?",
+      "snomed_code": "190634004",
+      "comment": "Alcohol and some drugs impair B12/folate absorption",
+      "token_yes": "HIST_ALCOHOL_USE_YES", "token_no": "HIST_ALCOHOL_USE_NO"
+    },
+    {
+      "trigger": "AST_HIGH",
+      "intent": "SUBSTANCE_LIVER_CHECK",
+      "text": "Do you drink alcohol or use recreational drugs?",
+      "snomed_code": "162864005",
+      "comment": "Alcohol/drugs cause hepatocellular injury",
+      "token_yes": "HIST_ALCOHOL_USE_YES", "token_no": "HIST_ALCOHOL_USE_NO"
+    },
+    {
+      "trigger": "UREA_HIGH",
+      "intent": "DEHYDRATION_CHECK",
+      "text": "Have you reduced your water intake or had recent diarrhea?",
+      "snomed_code": "34095006",
+      "comment": "Prerenal cause of elevated urea",
+      "token_yes": "SYMPTOM_VOMIT_YES", "token_no": "SYMPTOM_VOMIT_NO"
+    },
+    {
+      "trigger": "WBC_LOW",
+      "intent": "MEDICATION_NEUTROPENIA_CHECK",
+      "text": "Are you taking any medications (chemotherapy, immunosuppressants)?",
+      "snomed_code": "234532001",
+      "comment": "Drug-induced bone marrow suppression",
+      "token_yes": "HIST_IMMUNOSUPPRESSANT_YES", "token_no": "HIST_IMMUNOSUPPRESSANT_NO"
     }
   ],
   "under_60": [
     {
       "trigger": "HGB_LOW",
-      "intent": "GASTRITIS_CHECK",
-      "text": "Czy cierpisz na bóle brzucha lub zgagę?",
+      "intent": "GI_BLEED_CHECK",
+      "text": "Do you have a history of GI bleeding (blood in stool or vomit)?",
       "snomed_code": "235595009",
-      "token_yes": "SYMPTOM_STOMACH_PAIN_YES", "token_no": "SYMPTOM_STOMACH_PAIN_NO"
+      "comment": "GI blood loss is major cause of iron-deficiency anemia",
+      "token_yes": "SYMPTOM_GI_BLEED_YES", "token_no": "SYMPTOM_GI_BLEED_NO"
     },
     {
       "trigger": "HGB_LOW",
-      "intent": "GI_BLEED_CHECK",
-      "text": "Czy zauważyłeś krew w stolcu lub czarny stolec?",
+      "intent": "NSAID_CHECK",
+      "text": "Do you take aspirin, ibuprofen, or other NSAIDs regularly?",
       "snomed_code": "235595009",
-      "token_yes": "SYMPTOM_GI_BLEED_YES", "token_no": "SYMPTOM_GI_BLEED_NO"
+      "comment": "NSAIDs cause GI bleeding and anemia",
+      "token_yes": "HIST_NSAID_USE_YES", "token_no": "HIST_NSAID_USE_NO"
+    },
+    {
+      "trigger": "CREATININE_HIGH",
+      "intent": "UREMIA_CHECK",
+      "text": "Do you have fatigue, nausea, or loss of appetite?",
+      "snomed_code": "431855005",
+      "comment": "Uremic symptoms in advanced CKD",
+      "token_yes": "SYMPTOM_STOMACH_PAIN_YES", "token_no": "SYMPTOM_STOMACH_PAIN_NO"
+    },
+    {
+      "trigger": "CREATININE_HIGH",
+      "intent": "FAMILY_KIDNEY_CHECK",
+      "text": "Do you have a family history of kidney disease?",
+      "snomed_code": "431855005",
+      "comment": "Family history increases CKD risk",
+      "token_yes": "HIST_FAMILY_KIDNEY_YES", "token_no": "HIST_FAMILY_KIDNEY_NO"
     },
     {
       "trigger": "ALT_HIGH",
       "intent": "JAUNDICE_CHECK",
-      "text": "Czy występuje zażółcenie skóry (problemy z pęcherzykiem)?",
+      "text": "Do you have yellowing of skin or eyes, or dark urine?",
       "snomed_code": "65275009",
-      "comment": "ZMIANA: Acute Cholecystitis (z Twojej listy) zamiast rzadkiego WZW C",
+      "comment": "Liver dysfunction causes jaundice",
       "token_yes": "SYMPTOM_JAUNDICE_YES", "token_no": "SYMPTOM_JAUNDICE_NO"
     },
     {
-      "trigger": "CREATININE_HIGH",
-      "intent": "EDEMA_CHECK",
-      "text": "Czy masz obrzęki nóg lub twarzy?",
+      "trigger": "ALT_HIGH",
+      "intent": "HEPATITIS_EXPOSURE_CHECK",
+      "text": "Have you been exposed to someone with hepatitis?",
+      "snomed_code": "40275004",
+      "comment": "Viral hepatitis assessment",
+      "token_yes": "HIST_HEPATITIS_EXPOSURE_YES", "token_no": "HIST_HEPATITIS_EXPOSURE_NO"
+    },
+    {
+      "trigger": "PLT_LOW",
+      "intent": "ANTICOAGULANT_CHECK",
+      "text": "Are you taking any blood thinners (warfarin, DOACs)?",
+      "snomed_code": "414545008",
+      "comment": "Anticoagulants increase bleeding risk with low platelets",
+      "token_yes": "HIST_BLOOD_THINNERS_YES", "token_no": "HIST_BLOOD_THINNERS_NO"
+    },
+    {
+      "trigger": "PLT_LOW",
+      "intent": "SPONTANEOUS_BLEEDING_CHECK",
+      "text": "Do you have easy bruising, nosebleeds, or gum bleeding?",
+      "snomed_code": "271737000",
+      "comment": "Assess degree of thrombocytopenia",
+      "token_yes": "SYMPTOM_EASY_BRUISING_YES", "token_no": "SYMPTOM_EASY_BRUISING_NO"
+    },
+    {
+      "trigger": "WBC_HIGH",
+      "intent": "PROLONGED_FEVER_CHECK",
+      "text": "Have you had unexplained fever or night sweats?",
+      "snomed_code": "88805009",
+      "comment": "Persistent fever suggests serious infection or malignancy",
+      "token_yes": "SYMPTOM_WEIGHT_LOSS_YES", "token_no": "SYMPTOM_WEIGHT_LOSS_NO"
+    },
+    {
+      "trigger": "MCV_LOW",
+      "intent": "MALABSORPTION_MEDICATION_CHECK",
+      "text": "Do you take medications that affect iron absorption (PPIs, H2 blockers)?",
+      "snomed_code": "235595009",
+      "comment": "PPIs/H2 blockers reduce iron absorption",
+      "token_yes": "HIST_PPI_USE_YES", "token_no": "HIST_PPI_USE_NO"
+    },
+    {
+      "trigger": "MCV_HIGH",
+      "intent": "NEUROPATHY_CHECK",
+      "text": "Do you have tingling or numbness in your hands or feet?",
+      "snomed_code": "190634004",
+      "comment": "B12 deficiency causes peripheral neuropathy",
+      "token_yes": "SYMPTOM_NEUROPATHY_YES", "token_no": "SYMPTOM_NEUROPATHY_NO"
+    },
+    {
+      "trigger": "AST_HIGH",
+      "intent": "STATIN_MYOPATHY_CHECK",
+      "text": "Do you take statins or other cholesterol medications?",
+      "snomed_code": "444896005",
+      "comment": "Statins can cause muscle injury and elevated AST",
+      "token_yes": "HIST_STATIN_USE_YES", "token_no": "HIST_STATIN_USE_NO"
+    },
+    {
+      "trigger": "UREA_HIGH",
+      "intent": "CKD_RISK_CHECK",
+      "text": "Do you have diabetes or high blood pressure?",
       "snomed_code": "431855005",
-      "token_yes": "SYMPTOM_EDEMA_YES", "token_no": "SYMPTOM_EDEMA_NO"
+      "comment": "HTN and DM cause renal urea retention",
+      "token_yes": "HIST_CKD_RISK_YES", "token_no": "HIST_CKD_RISK_NO"
+    },
+    {
+      "trigger": "WBC_LOW",
+      "intent": "INFECTION_WARNING_CHECK",
+      "text": "Have you noticed unexplained sore throat or mouth ulcers?",
+      "snomed_code": "234532001",
+      "comment": "Can indicate severe immunosuppression",
+      "token_yes": "SYMPTOM_INFECTION_WARNING_YES", "token_no": "SYMPTOM_INFECTION_WARNING_NO"
     }
   ],
   "seniors": [
     {
       "trigger": "HGB_LOW",
-      "intent": "GI_BLEED_CHECK",
-      "text": "Czy zauważyłeś czarny, smolisty stolec?",
+      "intent": "GI_HEMORRHAGE_CHECK",
+      "text": "Have you had black or tarry stools, or vomited blood?",
       "snomed_code": "235595009",
-      "comment": "GERD/Problemy GI (powtórzenie celowe dla seniorów)",
+      "comment": "GI bleeding in seniors often from ulcers or diverticulosis",
       "token_yes": "SYMPTOM_GI_BLEED_YES", "token_no": "SYMPTOM_GI_BLEED_NO"
     },
     {
-      "trigger": "PLT_LOW",
-      "intent": "MEDS_CHECK",
-      "text": "Czy przyjmujesz leki rozrzedzające krew (np. Aspiryna)?",
+      "trigger": "HGB_LOW",
+      "intent": "BLEEDING_MED_CHECK",
+      "text": "Do you take blood thinners or have a bleeding disorder?",
       "snomed_code": "414545008",
-      "comment": "Choroba wieńcowa (Ischemic Heart Disease) -> Wymaga leków rozrzedzających",
+      "comment": "Anticoagulants increase bleeding risk",
       "token_yes": "HIST_BLOOD_THINNERS_YES", "token_no": "HIST_BLOOD_THINNERS_NO"
     },
     {
-      "trigger": "HGB_LOW",
-      "intent": "WEIGHT_LOSS_CHECK",
-      "text": "Czy nastąpiła niezamierzona utrata wagi?",
-      "snomed_code": "46177005",
-      "comment": "Schyłkowa niewydolność nerek (ESRD) -> Objaw: Wyniszczenie",
+      "trigger": "CREATININE_HIGH",
+      "intent": "UREMIC_ENCEPHALOPATHY_CHECK",
+      "text": "Do you feel confused or have difficulty concentrating?",
+      "snomed_code": "431855005",
+      "comment": "Severe CKD causes uremic encephalopathy in seniors",
+      "token_yes": "SYMPTOM_CONFUSION_YES", "token_no": "SYMPTOM_CONFUSION_NO"
+    },
+    {
+      "trigger": "CREATININE_HIGH",
+      "intent": "NEPHROTOXIC_MED_CHECK",
+      "text": "Do you take ACE inhibitors, ARBs, or NSAIDs?",
+      "snomed_code": "431855005",
+      "comment": "These drugs can worsen kidney function",
+      "token_yes": "HIST_NEPHROTOXIC_MED_YES", "token_no": "HIST_NEPHROTOXIC_MED_NO"
+    },
+    {
+      "trigger": "ALT_HIGH",
+      "intent": "ASCITES_CHECK",
+      "text": "Do you have abdominal pain or swelling in the belly?",
+      "snomed_code": "65275009",
+      "comment": "May indicate cirrhosis or ascites",
+      "token_yes": "SYMPTOM_STOMACH_PAIN_YES", "token_no": "SYMPTOM_STOMACH_PAIN_NO"
+    },
+    {
+      "trigger": "ALT_HIGH",
+      "intent": "HEPATIC_CACHEXIA_CHECK",
+      "text": "Have you had weight loss, fatigue, or loss of appetite?",
+      "snomed_code": "65275009",
+      "comment": "Constitutional symptoms of liver disease",
       "token_yes": "SYMPTOM_WEIGHT_LOSS_YES", "token_no": "SYMPTOM_WEIGHT_LOSS_NO"
     },
     {
-      "trigger": "HGB_LOW",
-      "intent": "CHEST_PAIN_CHECK",
-      "text": "Czy odczuwasz ból w klatce piersiowej promieniujący do ręki?",
+      "trigger": "PLT_LOW",
+      "intent": "ANTIPLATELET_CHECK",
+      "text": "Are you taking aspirin or warfarin for heart protection?",
       "snomed_code": "414545008",
-      "comment": "Choroba wieńcowa (Ischemic Heart Disease) -> Objaw: Ból dławicowy",
-      "token_yes": "SYMPTOM_CHEST_PAIN_YES", "token_no": "SYMPTOM_CHEST_PAIN_NO"
+      "comment": "Common in seniors; increases bleeding risk with thrombocytopenia",
+      "token_yes": "HIST_BLOOD_THINNERS_YES", "token_no": "HIST_BLOOD_THINNERS_NO"
+    },
+    {
+      "trigger": "PLT_LOW",
+      "intent": "FALL_RISK_CHECK",
+      "text": "Have you had any falls or accidents recently?",
+      "snomed_code": "414545008",
+      "comment": "Low platelets + falls = increased serious bleeding risk",
+      "token_yes": "HIST_FALL_RISK_YES", "token_no": "HIST_FALL_RISK_NO"
     },
     {
       "trigger": "WBC_HIGH",
-      "intent": "DYSPNEA_CHECK",
-      "text": "Czy towarzyszy temu duszność?",
+      "intent": "LOWER_RESP_INFECTION_CHECK",
+      "text": "Do you have persistent cough, shortness of breath, or fever?",
       "snomed_code": "88805009",
-      "comment": "Niewydolność serca (CHF) -> Objaw: Duszność",
+      "comment": "Pneumonia/bronchitis common in seniors with elevated WBC",
       "token_yes": "SYMPTOM_DYSPNEA_YES", "token_no": "SYMPTOM_DYSPNEA_NO"
+    },
+    {
+      "trigger": "WBC_HIGH",
+      "intent": "ACUTE_ILLNESS_CHECK",
+      "text": "Have you felt unusually unwell or feverish?",
+      "snomed_code": "88805009",
+      "comment": "General illness assessment in seniors",
+      "token_yes": "SYMPTOM_ACUTE_ILLNESS_YES", "token_no": "SYMPTOM_ACUTE_ILLNESS_NO"
+    },
+    {
+      "trigger": "MCV_LOW",
+      "intent": "PERNICIOUS_ANEMIA_CHECK",
+      "text": "Do you have difficulty swallowing or a sore tongue?",
+      "snomed_code": "84027009",
+      "comment": "Gastric atrophy in seniors impairs B12 absorption",
+      "token_yes": "SYMPTOM_PERNICIOUS_ANEMIA_YES", "token_no": "SYMPTOM_PERNICIOUS_ANEMIA_NO"
+    },
+    {
+      "trigger": "MCV_HIGH",
+      "intent": "B12_NEUROLOGIC_CHECK",
+      "text": "Do you have weakness, unsteadiness, or memory problems?",
+      "snomed_code": "190634004",
+      "comment": "B12 deficiency in seniors causes neurologic complications",
+      "token_yes": "SYMPTOM_NEUROPATHY_YES", "token_no": "SYMPTOM_NEUROPATHY_NO"
+    },
+    {
+      "trigger": "AST_HIGH",
+      "intent": "RHABDOMYOLYSIS_CHECK",
+      "text": "Have you had recent trauma, falls, or muscle pain?",
+      "snomed_code": "444896005",
+      "comment": "Muscle injury in seniors elevates AST/CK",
+      "token_yes": "HIST_MUSCLE_INJURY_YES", "token_no": "HIST_MUSCLE_INJURY_NO"
+    },
+    {
+      "trigger": "UREA_HIGH",
+      "intent": "DEHYDRATION_SENIOR_CHECK",
+      "text": "Do you feel dehydrated? How much water do you drink daily?",
+      "snomed_code": "34095006",
+      "comment": "Dehydration is major cause of elevated urea in elderly",
+      "token_yes": "SYMPTOM_DEHYDRATION_YES", "token_no": "SYMPTOM_DEHYDRATION_NO"
+    },
+    {
+      "trigger": "WBC_LOW",
+      "intent": "POLYPHARMACY_NEUTROPENIA_CHECK",
+      "text": "Are you taking multiple medications or chemotherapy?",
+      "snomed_code": "234532001",
+      "comment": "Drug interactions suppress bone marrow in seniors",
+      "token_yes": "HIST_IMMUNOSUPPRESSANT_YES", "token_no": "HIST_IMMUNOSUPPRESSANT_NO"
     }
   ]
 }

@@ -87,6 +87,16 @@ export interface TriageResult {
   modelVersion?: string
 }
 
+export type TestUrgency = 'routine' | 'soon' | 'urgent'
+
+export interface SuggestedTest {
+  /** Test name, e.g. "Ferritin", "eGFR", "Abdominal ultrasound". */
+  name: string
+  /** One-sentence justification — why this test would help. */
+  reason: string
+  urgency: TestUrgency
+}
+
 export interface OpusExplanation {
   /** Short, one-paragraph plain-language summary for patients. */
   patientSummary: string
@@ -96,6 +106,8 @@ export interface OpusExplanation {
   followUpQuestions?: string[]
   /** Safety-relevant red flags. */
   redFlags?: string[]
+  /** Concrete additional tests the patient should consider. */
+  suggestedTests?: SuggestedTest[]
 }
 
 export interface TrendDelta {
@@ -106,11 +118,68 @@ export interface TrendDelta {
   direction: 'up' | 'down' | 'flat'
 }
 
+export type TrendDirection =
+  | 'improving'
+  | 'stable'
+  | 'worsening'
+  | 'critical_worsening'
+
+export interface TrendPoint {
+  /** ISO date. */
+  date: string
+  value: number
+  status: 'low' | 'normal' | 'high'
+}
+
+export interface ParameterTrend {
+  parameter: string
+  unit: string
+  direction: TrendDirection
+
+  slope: number
+  r_squared: number
+  delta_last_two: number
+  delta_pct_last_two: number
+  avg_monthly_change: number
+
+  current_value: number
+  previous_value: number | null
+  min_value: number
+  max_value: number
+  measurement_count: number
+  days_span: number
+
+  is_accelerating: boolean
+  crossed_threshold: boolean
+
+  normal_low: number | null
+  normal_high: number | null
+
+  points: TrendPoint[]
+}
+
+export type AlertSeverity = 'info' | 'warning' | 'urgent' | 'critical'
+export type AlertType = 'velocity' | 'threshold' | 'pattern' | 'acceleration'
+
+export interface ClinicalAlert {
+  severity: AlertSeverity
+  alert_type: AlertType
+  parameter: string
+  title: string
+  description: string
+  clinical_significance: string
+  recommended_action: string
+}
+
 export interface TrendAnalysis {
   deltas: TrendDelta[]
   /** Natural-language interpretation of the trend (Opus). */
   interpretation: string
   urgency: 'low' | 'medium' | 'high'
+  /** Full per-parameter trend statistics (linear regression, velocity). */
+  trends?: ParameterTrend[]
+  /** Clinical alerts (velocity / threshold / pattern). */
+  alerts?: ClinicalAlert[]
 }
 
 export interface HistoryEntry {

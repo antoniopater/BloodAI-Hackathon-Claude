@@ -1,0 +1,464 @@
+{
+  "NEFRO": {
+    "display_name": "Nefrologia",
+    "always_recommended": [
+      {
+        "name": "eGFR (szacunkowy współczynnik filtracji kłębuszkowej)",
+        "why": "Precyzyjnie określa stadium niewydolności nerek",
+        "type": "blood",
+        "nfz_covered": true,
+        "approx_cost_pln": 15,
+        "fasting_required": false,
+        "turnaround_days": 1
+      },
+      {
+        "name": "Albumina w moczu / wskaźnik albumina-kreatynina (ACR)",
+        "why": "Wykrywa uszkodzenie nerek zanim kreatynina wzrośnie",
+        "type": "urine",
+        "nfz_covered": true,
+        "approx_cost_pln": 25,
+        "fasting_required": false,
+        "turnaround_days": 1
+      },
+      {
+        "name": "Elektrolity (sód, potas, wapń, fosforany)",
+        "why": "Nerki regulują elektrolity — zaburzenia mogą być niebezpieczne",
+        "type": "blood",
+        "nfz_covered": true,
+        "approx_cost_pln": 40,
+        "fasting_required": true,
+        "turnaround_days": 1
+      },
+      {
+        "name": "Badanie ogólne moczu",
+        "why": "Podstawowe badanie nerek — białko, krew, glukoza w moczu",
+        "type": "urine",
+        "nfz_covered": true,
+        "approx_cost_pln": 10,
+        "fasting_required": false,
+        "turnaround_days": 1
+      }
+    ],
+    "conditional": [
+      {
+        "name": "USG nerek",
+        "why": "Ocena struktury nerek — rozmiar, kamienie, torbiele",
+        "type": "imaging",
+        "condition": "CREATININE > 1.5 or first visit",
+        "nfz_covered": true,
+        "approx_cost_pln": 80,
+        "fasting_required": false,
+        "turnaround_days": 0,
+        "note": "Wynik od ręki — zabierz na wizytę"
+      },
+      {
+        "name": "Gazometria żylna",
+        "why": "Ocena kwasicy metabolicznej w zaawansowanej CKD",
+        "type": "blood",
+        "condition": "CREATININE > 3.0",
+        "nfz_covered": true,
+        "approx_cost_pln": 30,
+        "fasting_required": false,
+        "turnaround_days": 0
+      },
+      {
+        "name": "Parathormon (PTH)",
+        "why": "CKD zaburza gospodarkę wapniowo-fosforanową",
+        "type": "blood",
+        "condition": "CREATININE > 2.0",
+        "nfz_covered": true,
+        "approx_cost_pln": 45,
+        "fasting_required": false,
+        "turnaround_days": 2
+      }
+    ],
+    "bring_to_visit": [
+      "Lista wszystkich przyjmowanych leków (z dawkami)",
+      "Wyniki poprzednich badań krwi (jeśli masz)",
+      "Wyniki USG nerek (jeśli robiłeś wcześniej)",
+      "Informacja o chorobach przewlekłych (cukrzyca, nadciśnienie)"
+    ]
+  },
+
+  "HEMATO": {
+    "display_name": "Hematologia",
+    "always_recommended": [
+      {
+        "name": "Morfologia z rozmazem (CBC + differential)",
+        "why": "Pełny obraz krwi — nie tylko HGB ale też kształt i rozmiar komórek",
+        "type": "blood",
+        "nfz_covered": true,
+        "approx_cost_pln": 20,
+        "fasting_required": false,
+        "turnaround_days": 1
+      },
+      {
+        "name": "Ferrytyna + żelazo w surowicy + TIBC",
+        "why": "Rozróżnia typ anemii — z niedoboru żelaza vs inne",
+        "type": "blood",
+        "nfz_covered": true,
+        "approx_cost_pln": 50,
+        "fasting_required": true,
+        "turnaround_days": 1
+      },
+      {
+        "name": "Witamina B12 + kwas foliowy",
+        "why": "Niedobór B12/folianów to częsta przyczyna anemii makrocytowej",
+        "type": "blood",
+        "nfz_covered": true,
+        "approx_cost_pln": 60,
+        "fasting_required": true,
+        "turnaround_days": 2
+      },
+      {
+        "name": "Retikulocyty",
+        "why": "Pokazują czy szpik kostny reaguje na anemię",
+        "type": "blood",
+        "nfz_covered": true,
+        "approx_cost_pln": 15,
+        "fasting_required": false,
+        "turnaround_days": 1
+      }
+    ],
+    "conditional": [
+      {
+        "name": "LDH + haptoglobina + bilirubina",
+        "why": "Wykluczenie hemolizy (niszczenie czerwonych krwinek)",
+        "type": "blood",
+        "condition": "HGB < 10 and MCV normal/high",
+        "nfz_covered": true,
+        "approx_cost_pln": 55,
+        "fasting_required": false,
+        "turnaround_days": 1
+      },
+      {
+        "name": "Rozmaz krwi obwodowej (manual)",
+        "why": "Hematolog ogląda komórki pod mikroskopem",
+        "type": "blood",
+        "condition": "WBC abnormal or PLT < 100",
+        "nfz_covered": true,
+        "approx_cost_pln": 25,
+        "fasting_required": false,
+        "turnaround_days": 2
+      },
+      {
+        "name": "Elektroforeza białek surowicy",
+        "why": "Wykluczenie szpiczaka i innych gammapatii",
+        "type": "blood",
+        "condition": "age > 50 and unexplained anemia",
+        "nfz_covered": true,
+        "approx_cost_pln": 40,
+        "fasting_required": false,
+        "turnaround_days": 3
+      }
+    ],
+    "bring_to_visit": [
+      "Wszystkie wcześniejsze wyniki morfologii",
+      "Lista leków (niektóre powodują anemię)",
+      "Informacja o diecie (wegetarianizm, weganizm)",
+      "Informacja o krwawieniach (miesiączka, krew w stolcu)"
+    ]
+  },
+
+  "CARDIO": {
+    "display_name": "Kardiologia",
+    "always_recommended": [
+      {
+        "name": "Lipidogram (cholesterol, LDL, HDL, triglicerydy)",
+        "why": "Ocena ryzyka miażdżycy i chorób serca",
+        "type": "blood",
+        "nfz_covered": true,
+        "approx_cost_pln": 30,
+        "fasting_required": true,
+        "turnaround_days": 1
+      },
+      {
+        "name": "EKG (elektrokardiogram)",
+        "why": "Podstawowe badanie serca — arytmie, niedokrwienie",
+        "type": "diagnostic",
+        "nfz_covered": true,
+        "approx_cost_pln": 30,
+        "fasting_required": false,
+        "turnaround_days": 0,
+        "note": "Wynik od ręki — można zrobić u POZ"
+      },
+      {
+        "name": "Glukoza na czczo + HbA1c",
+        "why": "Cukrzyca to główny czynnik ryzyka chorób serca",
+        "type": "blood",
+        "nfz_covered": true,
+        "approx_cost_pln": 25,
+        "fasting_required": true,
+        "turnaround_days": 1
+      },
+      {
+        "name": "NT-proBNP",
+        "why": "Marker niewydolności serca — jeśli podwyższony, serce może być słabe",
+        "type": "blood",
+        "nfz_covered": true,
+        "approx_cost_pln": 60,
+        "fasting_required": false,
+        "turnaround_days": 1
+      }
+    ],
+    "conditional": [
+      {
+        "name": "Troponina",
+        "why": "Marker uszkodzenia mięśnia sercowego",
+        "type": "blood",
+        "condition": "chest_pain_yes or symptom_syncope_yes",
+        "nfz_covered": true,
+        "approx_cost_pln": 40,
+        "fasting_required": false,
+        "turnaround_days": 0,
+        "note": "PILNE — jeśli ból w klatce, idź na SOR"
+      },
+      {
+        "name": "Echo serca (ECHO)",
+        "why": "Ocena struktury i funkcji serca",
+        "type": "imaging",
+        "condition": "NT-proBNP elevated or dyspnea",
+        "nfz_covered": true,
+        "approx_cost_pln": 150,
+        "fasting_required": false,
+        "turnaround_days": 0
+      },
+      {
+        "name": "Holter EKG (24h)",
+        "why": "Wyłapuje arytmie których zwykłe EKG nie zobaczy",
+        "type": "diagnostic",
+        "condition": "symptom_palpitations_yes or syncope",
+        "nfz_covered": true,
+        "approx_cost_pln": 100,
+        "fasting_required": false,
+        "turnaround_days": 3
+      }
+    ],
+    "bring_to_visit": [
+      "Wynik EKG (jeśli masz)",
+      "Lista leków kardiologicznych",
+      "Pomiary ciśnienia z ostatniego tygodnia",
+      "Informacja o wywiadzie rodzinnym (zawały, udary)"
+    ]
+  },
+
+  "HEPATO": {
+    "display_name": "Hepatologia",
+    "always_recommended": [
+      {
+        "name": "Panel wątrobowy (ALT, AST, GGTP, ALP, bilirubina)",
+        "why": "Pełna ocena funkcji wątroby",
+        "type": "blood",
+        "nfz_covered": true,
+        "approx_cost_pln": 45,
+        "fasting_required": true,
+        "turnaround_days": 1
+      },
+      {
+        "name": "Albumina + INR",
+        "why": "Ocena zdolności syntetycznej wątroby",
+        "type": "blood",
+        "nfz_covered": true,
+        "approx_cost_pln": 30,
+        "fasting_required": false,
+        "turnaround_days": 1
+      },
+      {
+        "name": "USG jamy brzusznej",
+        "why": "Ocena struktury wątroby — stłuszczenie, marskość, guzy",
+        "type": "imaging",
+        "nfz_covered": true,
+        "approx_cost_pln": 100,
+        "fasting_required": true,
+        "turnaround_days": 0,
+        "note": "Na czczo! 6h bez jedzenia"
+      }
+    ],
+    "conditional": [
+      {
+        "name": "Serologia wirusowa (HBsAg, anty-HCV)",
+        "why": "Wykluczenie wirusowego zapalenia wątroby B i C",
+        "type": "blood",
+        "condition": "ALT > 100 or first visit",
+        "nfz_covered": true,
+        "approx_cost_pln": 50,
+        "fasting_required": false,
+        "turnaround_days": 2
+      },
+      {
+        "name": "Ferrytyna",
+        "why": "Hemochromatoza (przeładowanie żelazem) uszkadza wątrobę",
+        "type": "blood",
+        "condition": "ALT elevated and male",
+        "nfz_covered": true,
+        "approx_cost_pln": 25,
+        "fasting_required": true,
+        "turnaround_days": 1
+      }
+    ],
+    "bring_to_visit": [
+      "Wynik USG jamy brzusznej",
+      "Lista leków i suplementów (w tym ziołowych!)",
+      "Informacja o spożyciu alkoholu",
+      "Wcześniejsze wyniki prób wątrobowych"
+    ]
+  },
+
+  "GASTRO": {
+    "display_name": "Gastroenterologia",
+    "always_recommended": [
+      {
+        "name": "Krew utajona w kale (FOB/FIT)",
+        "why": "Wykrywa krwawienie z przewodu pokarmowego",
+        "type": "stool",
+        "nfz_covered": true,
+        "approx_cost_pln": 15,
+        "fasting_required": false,
+        "turnaround_days": 2
+      },
+      {
+        "name": "CRP + OB",
+        "why": "Markery stanu zapalnego — mogą wskazywać na IBD",
+        "type": "blood",
+        "nfz_covered": true,
+        "approx_cost_pln": 20,
+        "fasting_required": false,
+        "turnaround_days": 1
+      },
+      {
+        "name": "Kalprotektyna w kale",
+        "why": "Odróżnia stan zapalny jelit od IBS",
+        "type": "stool",
+        "nfz_covered": false,
+        "approx_cost_pln": 80,
+        "fasting_required": false,
+        "turnaround_days": 3
+      }
+    ],
+    "conditional": [
+      {
+        "name": "Test na H. pylori (antygen w kale lub test oddechowy)",
+        "why": "Bakteria powodująca wrzody i zapalenie żołądka",
+        "type": "stool",
+        "condition": "upper GI symptoms",
+        "nfz_covered": true,
+        "approx_cost_pln": 40,
+        "fasting_required": true,
+        "turnaround_days": 2
+      },
+      {
+        "name": "Anty-tTG IgA (celiakia)",
+        "why": "Wykluczenie celiakii",
+        "type": "blood",
+        "condition": "anemia and GI symptoms",
+        "nfz_covered": true,
+        "approx_cost_pln": 35,
+        "fasting_required": false,
+        "turnaround_days": 3
+      }
+    ],
+    "bring_to_visit": [
+      "Opis objawów: bóle brzucha, biegunki, zaparcia, krew w stolcu",
+      "Wyniki kału na krew utajoną",
+      "Lista leków (NLPZ mogą uszkadzać żołądek)",
+      "Dieta — co tolerujesz, co powoduje objawy"
+    ]
+  },
+
+  "PULMO": {
+    "display_name": "Pulmonologia",
+    "always_recommended": [
+      {
+        "name": "RTG klatki piersiowej (PA + boczne)",
+        "why": "Podstawowe badanie płuc — infekcje, guzy, płyn",
+        "type": "imaging",
+        "nfz_covered": true,
+        "approx_cost_pln": 40,
+        "fasting_required": false,
+        "turnaround_days": 0,
+        "note": "Wynik od ręki — zabierz na wizytę"
+      },
+      {
+        "name": "Spirometria",
+        "why": "Ocena pojemności i przepływu powietrza w płucach",
+        "type": "diagnostic",
+        "nfz_covered": true,
+        "approx_cost_pln": 50,
+        "fasting_required": false,
+        "turnaround_days": 0,
+        "note": "Nie pal 24h przed badaniem"
+      },
+      {
+        "name": "CRP",
+        "why": "Marker stanu zapalnego — infekcje dróg oddechowych",
+        "type": "blood",
+        "nfz_covered": true,
+        "approx_cost_pln": 15,
+        "fasting_required": false,
+        "turnaround_days": 1
+      }
+    ],
+    "conditional": [
+      {
+        "name": "Gazometria arterialna",
+        "why": "Ocena wymiany gazowej — czy krew jest dobrze natleniona",
+        "type": "blood",
+        "condition": "dyspnea_yes or SpO2 < 95%",
+        "nfz_covered": true,
+        "approx_cost_pln": 30,
+        "fasting_required": false,
+        "turnaround_days": 0
+      }
+    ],
+    "bring_to_visit": [
+      "RTG klatki piersiowej (jeśli zrobiony)",
+      "Wynik spirometrii (jeśli zrobiona)",
+      "Informacja o paleniu (ile lat, ile paczek dziennie)",
+      "Opis objawów: kaszel, duszność, świsty"
+    ]
+  },
+
+  "POZ": {
+    "display_name": "Podstawowa Opieka Zdrowotna",
+    "always_recommended": [
+      {
+        "name": "Morfologia z rozmazem",
+        "why": "Kontrolne badanie krwi",
+        "type": "blood",
+        "nfz_covered": true,
+        "approx_cost_pln": 20,
+        "fasting_required": false,
+        "turnaround_days": 1
+      },
+      {
+        "name": "Powtórne badanie za 2-4 tygodnie",
+        "why": "Jeśli wartości były graniczne — powtórz za 2-4 tyg.",
+        "type": "blood",
+        "nfz_covered": true,
+        "approx_cost_pln": 0,
+        "fasting_required": false,
+        "turnaround_days": 1,
+        "note": "Porównanie trendów jest ważne"
+      }
+    ],
+    "conditional": [],
+    "bring_to_visit": [
+      "Wyniki obecnych badań",
+      "Lista przyjmowanych leków",
+      "Opis objawów (jeśli jakiekolwiek)"
+    ]
+  },
+
+  "SOR": {
+    "display_name": "Szpitalny Oddział Ratunkowy",
+    "always_recommended": [],
+    "conditional": [],
+    "bring_to_visit": [
+      "Dokument tożsamości",
+      "Lista leków (na kartce lub w telefonie)",
+      "Wyniki dzisiejszych badań (jeśli masz)",
+      "Osoba towarzysząca (jeśli możesz)"
+    ],
+    "urgent_note": "⚠️ NIE CZEKAJ NA BADANIA — Jedź na SOR natychmiast!"
+  }
+}
